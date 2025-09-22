@@ -14,6 +14,8 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
+  serverURL: 'http://localhost:3001',
+  cors: ['http://localhost:3000'],
   admin: {
     user: Users.slug,
     importMap: {
@@ -36,4 +38,7 @@ export default buildConfig({
     payloadCloudPlugin(),
     // storage-adapter-placeholder
   ],
+  graphQL: {
+    disable: false, 
+  },
 })
