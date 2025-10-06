@@ -11,6 +11,10 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Articles } from './collections/Articles'
 import { ArticleCategories } from './collections/ArticleCategories'
+import { Home } from './collections/Home'
+import { About } from './collections/About'
+import { Contact } from './collections/Contact'
+import { Press } from './collections/Press'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -24,7 +28,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Articles, ArticleCategories],
+  collections: [Users, Media, Articles, ArticleCategories, Home, About, Contact, Press],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
