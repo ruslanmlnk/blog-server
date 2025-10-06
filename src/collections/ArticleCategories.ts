@@ -1,6 +1,9 @@
 import { anyone } from '@/app/access/anyone'
 import { authenticated } from '@/app/access/authenticated'
 import type { CollectionConfig } from 'payload'
+import { CategoryOverlayPair } from '@/blocks/category/OverlayPair'
+import { CategoryCardGrid } from '@/blocks/category/CardGrid'
+import { CategoryOverlayHero } from '@/blocks/category/OverlayHero'
 
 export const ArticleCategories: CollectionConfig = {
   slug: 'article_categories',
@@ -21,10 +24,17 @@ export const ArticleCategories: CollectionConfig = {
       required: true,
     },
     {
-      name: 'slug',
-      type: 'text',
-      required: true,
-      unique: true,
+      name: 'icon',
+      label: 'Icon',
+      type: 'upload',
+      relationTo: 'media',
+      required: false,
+    },
+    {
+      name: 'content',
+      label: 'Content',
+      type: 'blocks',
+      blocks: [CategoryOverlayPair, CategoryCardGrid, CategoryOverlayHero],
     },
   ],
 }

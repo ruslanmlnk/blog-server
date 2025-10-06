@@ -235,7 +235,39 @@ export interface Article {
 export interface ArticleCategory {
   id: number;
   title: string;
-  slug: string;
+  icon?: (number | null) | Media;
+  content?:
+    | (
+        | {
+            items?:
+              | {
+                  article: number | Article;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'categoryOverlayPair';
+          }
+        | {
+            items?:
+              | {
+                  article: number | Article;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'categoryCardGrid';
+          }
+        | {
+            article: number | Article;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'categoryOverlayHero';
+          }
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -484,7 +516,42 @@ export interface ArticlesSelect<T extends boolean = true> {
  */
 export interface ArticleCategoriesSelect<T extends boolean = true> {
   title?: T;
-  slug?: T;
+  icon?: T;
+  content?:
+    | T
+    | {
+        categoryOverlayPair?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    article?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        categoryCardGrid?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    article?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        categoryOverlayHero?:
+          | T
+          | {
+              article?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
 }
