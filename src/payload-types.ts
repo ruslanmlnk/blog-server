@@ -75,7 +75,6 @@ export interface Config {
     about: About;
     contact: Contact;
     press: Press;
-    press_outlets: PressOutlet;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -90,7 +89,6 @@ export interface Config {
     about: AboutSelect<false> | AboutSelect<true>;
     contact: ContactSelect<false> | ContactSelect<true>;
     press: PressSelect<false> | PressSelect<true>;
-    press_outlets: PressOutletsSelect<false> | PressOutletsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -343,18 +341,40 @@ export interface Contact {
 export interface Press {
   id: number;
   title: string;
-  description: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "press_outlets".
- */
-export interface PressOutlet {
-  id: number;
-  name: string;
-  avatar?: (number | null) | Media;
+  description?: string | null;
+  icon?: (number | null) | Media;
+  content?:
+    | (
+        | {
+            items?:
+              | {
+                  article: number | Article;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'categoryOverlayPair';
+          }
+        | {
+            items?:
+              | {
+                  article: number | Article;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'categoryCardGrid';
+          }
+        | {
+            article: number | Article;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'categoryOverlayHero';
+          }
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -396,10 +416,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'press';
         value: number | Press;
-      } | null)
-    | ({
-        relationTo: 'press_outlets';
-        value: number | PressOutlet;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -662,16 +678,42 @@ export interface ContactSelect<T extends boolean = true> {
 export interface PressSelect<T extends boolean = true> {
   title?: T;
   description?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "press_outlets_select".
- */
-export interface PressOutletsSelect<T extends boolean = true> {
-  name?: T;
-  avatar?: T;
+  icon?: T;
+  content?:
+    | T
+    | {
+        categoryOverlayPair?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    article?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        categoryCardGrid?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    article?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        categoryOverlayHero?:
+          | T
+          | {
+              article?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
 }
