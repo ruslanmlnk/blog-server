@@ -9,7 +9,7 @@ export const CategoryCardGrid: Block = {
       name: 'items',
       label: 'Items',
       minRows: 1,
-      maxRows: 3,
+      // Remove maxRows to allow any number of cards
       fields: [
         {
           name: 'article',
@@ -22,4 +22,3 @@ export const CategoryCardGrid: Block = {
     },
   ],
 }
-
