@@ -75,6 +75,7 @@ export interface Config {
     about: About;
     contact: Contact;
     press: Press;
+    interview: Interview;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -89,6 +90,7 @@ export interface Config {
     about: AboutSelect<false> | AboutSelect<true>;
     contact: ContactSelect<false> | ContactSelect<true>;
     press: PressSelect<false> | PressSelect<true>;
+    interview: InterviewSelect<false> | InterviewSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -380,6 +382,55 @@ export interface Press {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "interview".
+ */
+export interface Interview {
+  id: number;
+  title: string;
+  content?:
+    | (
+        | {
+            href: string;
+            title: string;
+            subtitle?: string | null;
+            dateLabel?: string | null;
+            image: number | Media;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'interviewOverlayHero';
+          }
+        | {
+            items: {
+              href: string;
+              title: string;
+              description?: string | null;
+              dateLabel?: string | null;
+              image: number | Media;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'interviewCardGrid';
+          }
+        | {
+            items: {
+              href: string;
+              title: string;
+              dateLabel?: string | null;
+              image: number | Media;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'interviewOverlayPair';
+          }
+      )[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -416,6 +467,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'press';
         value: number | Press;
+      } | null)
+    | ({
+        relationTo: 'interview';
+        value: number | Interview;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -710,6 +765,61 @@ export interface PressSelect<T extends boolean = true> {
           | T
           | {
               article?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "interview_select".
+ */
+export interface InterviewSelect<T extends boolean = true> {
+  title?: T;
+  content?:
+    | T
+    | {
+        interviewOverlayHero?:
+          | T
+          | {
+              href?: T;
+              title?: T;
+              subtitle?: T;
+              dateLabel?: T;
+              image?: T;
+              id?: T;
+              blockName?: T;
+            };
+        interviewCardGrid?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    href?: T;
+                    title?: T;
+                    description?: T;
+                    dateLabel?: T;
+                    image?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        interviewOverlayPair?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    href?: T;
+                    title?: T;
+                    dateLabel?: T;
+                    image?: T;
+                    id?: T;
+                  };
               id?: T;
               blockName?: T;
             };
