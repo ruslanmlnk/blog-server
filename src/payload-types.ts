@@ -393,7 +393,6 @@ export interface Interview {
             href: string;
             title: string;
             subtitle?: string | null;
-            dateLabel?: string | null;
             image: number | Media;
             id?: string | null;
             blockName?: string | null;
@@ -404,7 +403,6 @@ export interface Interview {
               href: string;
               title: string;
               description?: string | null;
-              dateLabel?: string | null;
               image: number | Media;
               id?: string | null;
             }[];
@@ -416,7 +414,6 @@ export interface Interview {
             items: {
               href: string;
               title: string;
-              dateLabel?: string | null;
               image: number | Media;
               id?: string | null;
             }[];
@@ -787,7 +784,6 @@ export interface InterviewSelect<T extends boolean = true> {
               href?: T;
               title?: T;
               subtitle?: T;
-              dateLabel?: T;
               image?: T;
               id?: T;
               blockName?: T;
@@ -801,7 +797,6 @@ export interface InterviewSelect<T extends boolean = true> {
                     href?: T;
                     title?: T;
                     description?: T;
-                    dateLabel?: T;
                     image?: T;
                     id?: T;
                   };
@@ -816,7 +811,6 @@ export interface InterviewSelect<T extends boolean = true> {
                 | {
                     href?: T;
                     title?: T;
-                    dateLabel?: T;
                     image?: T;
                     id?: T;
                   };

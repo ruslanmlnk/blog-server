@@ -12,10 +12,8 @@ export const InterviewOverlayPair: Block = {
       fields: [
         { name: 'href', label: 'Link URL', type: 'text', required: true },
         { name: 'title', type: 'text', required: true },
-        { name: 'dateLabel', label: 'Source label (e.g. The Insider Live)', type: 'text' },
         { name: 'image', label: 'Image', type: 'upload', relationTo: 'media', required: true },
       ],
     },
   ],
 }
-

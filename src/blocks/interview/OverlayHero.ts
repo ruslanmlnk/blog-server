@@ -7,8 +7,6 @@ export const InterviewOverlayHero: Block = {
     { name: 'href', label: 'Link URL', type: 'text', required: true },
     { name: 'title', type: 'text', required: true },
     { name: 'subtitle', type: 'textarea' },
-    { name: 'dateLabel', label: 'Source label (e.g. The Insider Live)', type: 'text' },
     { name: 'image', label: 'Image', type: 'upload', relationTo: 'media', required: true },
   ],
 }
-
