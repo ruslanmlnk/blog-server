@@ -281,6 +281,15 @@ export interface Home {
   id: number;
   title: string;
   description: string;
+  trends?: {
+    title?: string | null;
+    items?:
+      | {
+          article: number | Article;
+          id?: string | null;
+        }[]
+      | null;
+  };
   content?:
     | (
         | {
@@ -668,6 +677,17 @@ export interface ArticleCategoriesSelect<T extends boolean = true> {
 export interface HomeSelect<T extends boolean = true> {
   title?: T;
   description?: T;
+  trends?:
+    | T
+    | {
+        title?: T;
+        items?:
+          | T
+          | {
+              article?: T;
+              id?: T;
+            };
+      };
   content?:
     | T
     | {
