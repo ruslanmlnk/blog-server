@@ -75,6 +75,7 @@ export interface Config {
     about: About;
     contact: Contact;
     press: Press;
+    press_outlets: PressOutlet;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -89,6 +90,7 @@ export interface Config {
     about: AboutSelect<false> | AboutSelect<true>;
     contact: ContactSelect<false> | ContactSelect<true>;
     press: PressSelect<false> | PressSelect<true>;
+    press_outlets: PressOutletsSelect<false> | PressOutletsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -279,6 +281,27 @@ export interface Home {
   id: number;
   title: string;
   description: string;
+  content?:
+    | (
+        | {
+            article: number | Article;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'homeFeatured';
+          }
+        | {
+            items?:
+              | {
+                  article: number | Article;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'categoryCardGrid';
+          }
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -326,6 +349,17 @@ export interface Press {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "press_outlets".
+ */
+export interface PressOutlet {
+  id: number;
+  name: string;
+  avatar?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -362,6 +396,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'press';
         value: number | Press;
+      } | null)
+    | ({
+        relationTo: 'press_outlets';
+        value: number | PressOutlet;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -562,6 +600,29 @@ export interface ArticleCategoriesSelect<T extends boolean = true> {
 export interface HomeSelect<T extends boolean = true> {
   title?: T;
   description?: T;
+  content?:
+    | T
+    | {
+        homeFeatured?:
+          | T
+          | {
+              article?: T;
+              id?: T;
+              blockName?: T;
+            };
+        categoryCardGrid?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    article?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -601,6 +662,16 @@ export interface ContactSelect<T extends boolean = true> {
 export interface PressSelect<T extends boolean = true> {
   title?: T;
   description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "press_outlets_select".
+ */
+export interface PressOutletsSelect<T extends boolean = true> {
+  name?: T;
+  avatar?: T;
   updatedAt?: T;
   createdAt?: T;
 }
