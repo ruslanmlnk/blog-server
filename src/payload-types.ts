@@ -76,6 +76,8 @@ export interface Config {
     contact: Contact;
     press: Press;
     interview: Interview;
+    'contact-messages': ContactMessage;
+    'weekly-newsletters': WeeklyNewsletter;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -91,6 +93,8 @@ export interface Config {
     contact: ContactSelect<false> | ContactSelect<true>;
     press: PressSelect<false> | PressSelect<true>;
     interview: InterviewSelect<false> | InterviewSelect<true>;
+    'contact-messages': ContactMessagesSelect<false> | ContactMessagesSelect<true>;
+    'weekly-newsletters': WeeklyNewslettersSelect<false> | WeeklyNewslettersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -177,56 +181,28 @@ export interface Media {
 export interface Article {
   id: number;
   title: string;
+  /**
+   * Автоматично генерується з title, якщо не заповнено
+   */
   slug: string;
   bg: number | Media;
   category: number | ArticleCategory;
   description: string;
-  content?:
-    | (
-        | {
-            title?: string | null;
-            list_items?:
-              | {
-                  item_title?: string | null;
-                  id?: string | null;
-                }[]
-              | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'list';
-          }
-        | {
-            text: string;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'paragraph';
-          }
-        | {
-            text: string;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'heading1';
-          }
-        | {
-            text: string;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'heading2';
-          }
-        | {
-            text: string;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'heading3';
-          }
-        | {
-            text: string;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'heading4';
-          }
-      )[]
-    | null;
+  richContent?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -437,6 +413,29 @@ export interface Interview {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-messages".
+ */
+export interface ContactMessage {
+  id: number;
+  name: string;
+  phone?: string | null;
+  email?: string | null;
+  message?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "weekly-newsletters".
+ */
+export interface WeeklyNewsletter {
+  id: number;
+  email?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -477,6 +476,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'interview';
         value: number | Interview;
+      } | null)
+    | ({
+        relationTo: 'contact-messages';
+        value: number | ContactMessage;
+      } | null)
+    | ({
+        relationTo: 'weekly-newsletters';
+        value: number | WeeklyNewsletter;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -570,58 +577,7 @@ export interface ArticlesSelect<T extends boolean = true> {
   bg?: T;
   category?: T;
   description?: T;
-  content?:
-    | T
-    | {
-        list?:
-          | T
-          | {
-              title?: T;
-              list_items?:
-                | T
-                | {
-                    item_title?: T;
-                    id?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
-        paragraph?:
-          | T
-          | {
-              text?: T;
-              id?: T;
-              blockName?: T;
-            };
-        heading1?:
-          | T
-          | {
-              text?: T;
-              id?: T;
-              blockName?: T;
-            };
-        heading2?:
-          | T
-          | {
-              text?: T;
-              id?: T;
-              blockName?: T;
-            };
-        heading3?:
-          | T
-          | {
-              text?: T;
-              id?: T;
-              blockName?: T;
-            };
-        heading4?:
-          | T
-          | {
-              text?: T;
-              id?: T;
-              blockName?: T;
-            };
-      };
+  richContent?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -838,6 +794,27 @@ export interface InterviewSelect<T extends boolean = true> {
               blockName?: T;
             };
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-messages_select".
+ */
+export interface ContactMessagesSelect<T extends boolean = true> {
+  name?: T;
+  phone?: T;
+  email?: T;
+  message?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "weekly-newsletters_select".
+ */
+export interface WeeklyNewslettersSelect<T extends boolean = true> {
+  email?: T;
   updatedAt?: T;
   createdAt?: T;
 }

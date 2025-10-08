@@ -16,6 +16,8 @@ import { About } from './collections/About'
 import { Contact } from './collections/Contact'
 import { Press } from './collections/Press'
 import { Interview } from './collections/Interview'
+import ContactMessages from './collections/ContactMessages'
+import WeeklyNewsletter from './collections/WeeklyNewsletter'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -29,7 +31,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Articles, ArticleCategories, Home, About, Contact, Press, Interview],
+  collections: [Users, Media, Articles, ArticleCategories, Home, About, Contact, Press, Interview, ContactMessages, WeeklyNewsletter],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -43,7 +45,6 @@ export default buildConfig({
   sharp,
   plugins: [
     payloadCloudPlugin(),
-    // storage-adapter-placeholder
   ],
   graphQL: {
     disable: false, 
