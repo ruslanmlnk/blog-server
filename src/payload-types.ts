@@ -333,32 +333,39 @@ export interface Press {
   content?:
     | (
         | {
-            items?:
-              | {
-                  article: number | Article;
-                  id?: string | null;
-                }[]
-              | null;
+            date?: string | null;
+            href: string;
+            title: string;
+            subtitle?: string | null;
+            image: number | Media;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'categoryOverlayPair';
+            blockType: 'pressOverlayHero';
           }
         | {
-            items?:
-              | {
-                  article: number | Article;
-                  id?: string | null;
-                }[]
-              | null;
+            items: {
+              date?: string | null;
+              href: string;
+              title: string;
+              description?: string | null;
+              image: number | Media;
+              id?: string | null;
+            }[];
             id?: string | null;
             blockName?: string | null;
-            blockType: 'categoryCardGrid';
+            blockType: 'pressCardGrid';
           }
         | {
-            article: number | Article;
+            items: {
+              date?: string | null;
+              href: string;
+              title: string;
+              image: number | Media;
+              id?: string | null;
+            }[];
             id?: string | null;
             blockName?: string | null;
-            blockType: 'categoryOverlayHero';
+            blockType: 'pressOverlayPair';
           }
       )[]
     | null;
@@ -710,34 +717,45 @@ export interface PressSelect<T extends boolean = true> {
   content?:
     | T
     | {
-        categoryOverlayPair?:
+        pressOverlayHero?:
+          | T
+          | {
+              date?: T;
+              href?: T;
+              title?: T;
+              subtitle?: T;
+              image?: T;
+              id?: T;
+              blockName?: T;
+            };
+        pressCardGrid?:
           | T
           | {
               items?:
                 | T
                 | {
-                    article?: T;
+                    date?: T;
+                    href?: T;
+                    title?: T;
+                    description?: T;
+                    image?: T;
                     id?: T;
                   };
               id?: T;
               blockName?: T;
             };
-        categoryCardGrid?:
+        pressOverlayPair?:
           | T
           | {
               items?:
                 | T
                 | {
-                    article?: T;
+                    date?: T;
+                    href?: T;
+                    title?: T;
+                    image?: T;
                     id?: T;
                   };
-              id?: T;
-              blockName?: T;
-            };
-        categoryOverlayHero?:
-          | T
-          | {
-              article?: T;
               id?: T;
               blockName?: T;
             };

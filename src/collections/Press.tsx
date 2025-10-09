@@ -1,9 +1,9 @@
 import { anyone } from '@/app/access/anyone'
 import { authenticated } from '@/app/access/authenticated'
 import type { CollectionConfig } from 'payload'
-import { CategoryOverlayPair } from '@/blocks/category/OverlayPair'
-import { CategoryCardGrid } from '@/blocks/category/CardGrid'
-import { CategoryOverlayHero } from '@/blocks/category/OverlayHero'
+import { PressOverlayPair } from '@/blocks/press/OverlayPair'
+import { PressCardGrid } from '@/blocks/press/CardGrid'
+import { PressOverlayHero } from '@/blocks/press/OverlayHero'
 
 export const Press: CollectionConfig = {
   slug: 'press',
@@ -42,7 +42,7 @@ export const Press: CollectionConfig = {
       name: 'content',
       label: 'Content',
       type: 'blocks',
-      blocks: [CategoryOverlayPair, CategoryCardGrid, CategoryOverlayHero],
+      blocks: [PressOverlayHero, PressCardGrid, PressOverlayPair],
     },
   ],
 }
