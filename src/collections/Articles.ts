@@ -1,16 +1,9 @@
 import { anyone } from '@/app/access/anyone'
 import { authenticated } from '@/app/access/authenticated'
-import { Heading1 } from '@/blocks/article/Heading1'
-import { Heading2 } from '@/blocks/article/Heading2'
-import { Heading3 } from '@/blocks/article/Heading3'
-import { Heading4 } from '@/blocks/article/Heading4'
-import { ImageBlock } from '@/blocks/article/ImageBlock'
-import { Quote } from '@/blocks/article/Quote'
-import { List } from '@/blocks/List'
-import { Paragraph } from '@/blocks/Paragraph'
+
 import type { CollectionConfig } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-
+import { TextSizeFeature } from "payload-lexical-typography";
 // 🔠 Простий мапінг для транслітерації російських символів
 function transliterate(text: string): string {
   const map: Record<string, string> = {
@@ -101,7 +94,25 @@ export const Articles: CollectionConfig = {
       type: 'richText',
       label: 'Розширений контент',
       editor: lexicalEditor({
-        features: ({ defaultFeatures }) => [...defaultFeatures],
+        features: ({ defaultFeatures }) => [
+          ...defaultFeatures,
+          TextSizeFeature({
+            // Show a curated list of sizes and allow custom values
+            sizes: [
+              { value: '12px', label: '12' },
+              { value: '14px', label: '14' },
+              { value: '16px', label: '16' },
+              { value: '18px', label: '18' },
+              { value: '20px', label: '20' },
+              { value: '24px', label: '24' },
+              { value: '28px', label: '28' },
+              { value: '32px', label: '32' },
+            ],
+            method: 'replace',
+            customSize: true,
+            scroll: true,
+          }),
+        ],
       }),
     },
   ],
