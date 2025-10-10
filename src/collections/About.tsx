@@ -22,6 +22,7 @@ export const About: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
     },
     // Main hero image at the top of the page
     {
@@ -37,6 +38,7 @@ export const About: CollectionConfig = {
       type: 'textarea',
       required: true,
       label: 'Lead text',
+      localized: true,
     },
     // Dynamic list of cards/blocks displayed in two columns
     {
@@ -53,11 +55,13 @@ export const About: CollectionConfig = {
           name: 'title',
           type: 'text',
           required: true,
+          localized: true,
         },
         {
           name: 'text',
           type: 'textarea',
           required: true,
+          localized: true,
         },
       ],
     },

@@ -3,24 +3,24 @@ import { authenticated } from '@/app/access/authenticated'
 
 import type { CollectionConfig } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { TextSizeFeature } from "payload-lexical-typography";
-// 🔠 Простий мапінг для транслітерації російських символів
+import { TextSizeFeature } from 'payload-lexical-typography'
+
 function transliterate(text: string): string {
   const map: Record<string, string> = {
     а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z',
     и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
     с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'ts', ч: 'ch', ш: 'sh',
-    щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya',
+    щ: 'sch', ь: '', ы: 'y', ъ: '', э: 'e', ю: 'yu', я: 'ya',
   }
   return text
     .toLowerCase()
     .split('')
-    .map(char => map[char] ?? char)
+    .map((char) => map[char] ?? char)
     .join('')
-    .replace(/[^a-z0-9\s-]/g, '') // прибираємо зайве
+    .replace(/[^a-z0-9\s-]/g, '')
     .trim()
-    .replace(/\s+/g, '-') // пробіли -> "-"
-    .replace(/-+/g, '-') // подвійні дефіси -> один
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
 }
 
 export const Articles: CollectionConfig = {
@@ -52,6 +52,7 @@ export const Articles: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
     },
     {
       name: 'slug',
@@ -59,7 +60,7 @@ export const Articles: CollectionConfig = {
       required: true,
       unique: true,
       admin: {
-        description: 'Автоматично генерується з title, якщо не заповнено',
+        description: 'Slug is generated from title, but can be overridden',
       },
     },
     {
@@ -82,22 +83,16 @@ export const Articles: CollectionConfig = {
       name: 'description',
       type: 'text',
       required: true,
+      localized: true,
     },
-    // {
-    //   name: 'content',
-    //   label: 'Content',
-    //   type: 'blocks',
-    //   blocks: [List, Paragraph, Heading1, Heading2, Heading3, Heading4, Quote, ImageBlock],
-    // },
     {
       name: 'richContent',
       type: 'richText',
-      label: 'Розширений контент',
+      label: 'Rich Content',
       editor: lexicalEditor({
         features: ({ defaultFeatures }) => [
           ...defaultFeatures,
           TextSizeFeature({
-            // Show a curated list of sizes and allow custom values
             sizes: [
               { value: '12px', label: '12' },
               { value: '14px', label: '14' },
@@ -114,6 +109,8 @@ export const Articles: CollectionConfig = {
           }),
         ],
       }),
+      localized: true,
     },
   ],
 }
+

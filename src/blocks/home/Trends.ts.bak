@@ -9,8 +9,7 @@ export const HomeTrends: Block = {
       label: 'Title',
       type: 'text',
       required: false,
-      defaultValue: 'Trends',
-      localized: true,
+      defaultValue: 'Тренды',
     },
     {
       type: 'array',
@@ -29,5 +28,4 @@ export const HomeTrends: Block = {
     },
   ],
 }
-
 

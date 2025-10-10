@@ -25,13 +25,14 @@ export const Interview: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
     },
     {
       name: 'content',
       label: 'Content',
       type: 'blocks',
+      localized: true,
       blocks: [InterviewOverlayHero, InterviewCardGrid, InterviewOverlayPair],
     },
   ],
 }
-

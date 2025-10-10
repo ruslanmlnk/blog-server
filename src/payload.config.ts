@@ -25,6 +25,16 @@ const dirname = path.dirname(filename)
 export default buildConfig({
   serverURL: 'http://localhost:3001',
   cors: ['http://localhost:3000'],
+  localization: {
+    locales: [
+      { code: 'ru', label: 'Русский' },
+      { code: 'uk', label: 'Українська' },
+      { code: 'en', label: 'English' },
+      { code: 'fr', label: 'Français' },
+    ],
+    defaultLocale: 'ru',
+    fallback: true,
+  },
   admin: {
     user: Users.slug,
     importMap: {

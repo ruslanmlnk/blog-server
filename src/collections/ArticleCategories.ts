@@ -22,6 +22,7 @@ export const ArticleCategories: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
     },
     {
       name: 'icon',
@@ -34,6 +35,7 @@ export const ArticleCategories: CollectionConfig = {
       name: 'content',
       label: 'Content',
       type: 'blocks',
+      localized: true,
       blocks: [CategoryOverlayPair, CategoryCardGrid, CategoryOverlayHero],
     },
   ],

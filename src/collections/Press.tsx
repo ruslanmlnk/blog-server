@@ -25,11 +25,13 @@ export const Press: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
     },
     {
       name: 'description',
       type: 'textarea',
       required: false,
+      localized: true,
     },
     {
       name: 'icon',
@@ -42,6 +44,7 @@ export const Press: CollectionConfig = {
       name: 'content',
       label: 'Content',
       type: 'blocks',
+      localized: true,
       blocks: [PressOverlayHero, PressCardGrid, PressOverlayPair],
     },
   ],

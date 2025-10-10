@@ -12,7 +12,7 @@ export const PressOverlayPair: Block = {
       fields: [
         { name: 'date', label: 'Date', type: 'date', required: false },
         { name: 'href', label: 'Link URL', type: 'text', required: true },
-        { name: 'title', type: 'text', required: true },
+        { name: 'title', type: 'text', required: true, localized: true },
         { name: 'image', label: 'Image', type: 'upload', relationTo: 'media', required: true },
       ],
     },

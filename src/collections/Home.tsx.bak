@@ -25,13 +25,11 @@ export const Home: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
-      localized: true,
     },
     {
       name: 'description',
       type: 'textarea',
       required: true,
-      localized: true,
     },
     {
       name: 'trends',
@@ -43,8 +41,7 @@ export const Home: CollectionConfig = {
           label: 'Title',
           type: 'text',
           required: false,
-          defaultValue: 'Trends',
-          localized: true,
+          defaultValue: 'Тренды',
         },
         {
           type: 'array',
@@ -67,9 +64,7 @@ export const Home: CollectionConfig = {
       name: 'content',
       label: 'Content',
       type: 'blocks',
-      localized: true,
       blocks: [HomeFeatured, CategoryCardGrid],
     },
   ],
 }
-

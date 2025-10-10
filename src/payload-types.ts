@@ -104,7 +104,7 @@ export interface Config {
   };
   globals: {};
   globalsSelect: {};
-  locale: null;
+  locale: 'ru' | 'uk' | 'en' | 'fr';
   user: User & {
     collection: 'users';
   };
@@ -182,7 +182,7 @@ export interface Article {
   id: number;
   title: string;
   /**
-   * Автоматично генерується з title, якщо не заповнено
+   * Slug is generated from title, but can be overridden
    */
   slug: string;
   bg: number | Media;

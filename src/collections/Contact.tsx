@@ -22,11 +22,13 @@ export const Contact: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
     },
     {
       name: 'description',
       type: 'textarea',
       required: true,
+      localized: true,
     },
     // Image shown near the contact form
     {
