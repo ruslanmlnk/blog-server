@@ -219,6 +219,7 @@ export interface ArticleCategory {
         | {
             items?:
               | {
+                  visibleFrom?: string | null;
                   article: number | Article;
                   id?: string | null;
                 }[]
@@ -230,6 +231,7 @@ export interface ArticleCategory {
         | {
             items?:
               | {
+                  visibleFrom?: string | null;
                   article: number | Article;
                   id?: string | null;
                 }[]
@@ -239,6 +241,7 @@ export interface ArticleCategory {
             blockType: 'categoryCardGrid';
           }
         | {
+            visibleFrom?: string | null;
             article: number | Article;
             id?: string | null;
             blockName?: string | null;
@@ -269,6 +272,7 @@ export interface Home {
   content?:
     | (
         | {
+            visibleFrom?: string | null;
             article: number | Article;
             id?: string | null;
             blockName?: string | null;
@@ -277,6 +281,7 @@ export interface Home {
         | {
             items?:
               | {
+                  visibleFrom?: string | null;
                   article: number | Article;
                   id?: string | null;
                 }[]
@@ -334,6 +339,7 @@ export interface Press {
     | (
         | {
             date?: string | null;
+            visibleFrom?: string | null;
             href: string;
             title: string;
             subtitle?: string | null;
@@ -345,6 +351,7 @@ export interface Press {
         | {
             items: {
               date?: string | null;
+              visibleFrom?: string | null;
               href: string;
               title: string;
               description?: string | null;
@@ -358,6 +365,7 @@ export interface Press {
         | {
             items: {
               date?: string | null;
+              visibleFrom?: string | null;
               href: string;
               title: string;
               image: number | Media;
@@ -382,6 +390,7 @@ export interface Interview {
   content?:
     | (
         | {
+            visibleFrom?: string | null;
             href: string;
             title: string;
             subtitle?: string | null;
@@ -392,6 +401,7 @@ export interface Interview {
           }
         | {
             items: {
+              visibleFrom?: string | null;
               href: string;
               title: string;
               description?: string | null;
@@ -404,6 +414,7 @@ export interface Interview {
           }
         | {
             items: {
+              visibleFrom?: string | null;
               href: string;
               title: string;
               image: number | Media;
@@ -604,6 +615,7 @@ export interface ArticleCategoriesSelect<T extends boolean = true> {
               items?:
                 | T
                 | {
+                    visibleFrom?: T;
                     article?: T;
                     id?: T;
                   };
@@ -616,6 +628,7 @@ export interface ArticleCategoriesSelect<T extends boolean = true> {
               items?:
                 | T
                 | {
+                    visibleFrom?: T;
                     article?: T;
                     id?: T;
                   };
@@ -625,6 +638,7 @@ export interface ArticleCategoriesSelect<T extends boolean = true> {
         categoryOverlayHero?:
           | T
           | {
+              visibleFrom?: T;
               article?: T;
               id?: T;
               blockName?: T;
@@ -657,6 +671,7 @@ export interface HomeSelect<T extends boolean = true> {
         homeFeatured?:
           | T
           | {
+              visibleFrom?: T;
               article?: T;
               id?: T;
               blockName?: T;
@@ -667,6 +682,7 @@ export interface HomeSelect<T extends boolean = true> {
               items?:
                 | T
                 | {
+                    visibleFrom?: T;
                     article?: T;
                     id?: T;
                   };
@@ -721,6 +737,7 @@ export interface PressSelect<T extends boolean = true> {
           | T
           | {
               date?: T;
+              visibleFrom?: T;
               href?: T;
               title?: T;
               subtitle?: T;
@@ -735,6 +752,7 @@ export interface PressSelect<T extends boolean = true> {
                 | T
                 | {
                     date?: T;
+                    visibleFrom?: T;
                     href?: T;
                     title?: T;
                     description?: T;
@@ -751,6 +769,7 @@ export interface PressSelect<T extends boolean = true> {
                 | T
                 | {
                     date?: T;
+                    visibleFrom?: T;
                     href?: T;
                     title?: T;
                     image?: T;
@@ -775,6 +794,7 @@ export interface InterviewSelect<T extends boolean = true> {
         interviewOverlayHero?:
           | T
           | {
+              visibleFrom?: T;
               href?: T;
               title?: T;
               subtitle?: T;
@@ -788,6 +808,7 @@ export interface InterviewSelect<T extends boolean = true> {
               items?:
                 | T
                 | {
+                    visibleFrom?: T;
                     href?: T;
                     title?: T;
                     description?: T;
@@ -803,6 +824,7 @@ export interface InterviewSelect<T extends boolean = true> {
               items?:
                 | T
                 | {
+                    visibleFrom?: T;
                     href?: T;
                     title?: T;
                     image?: T;

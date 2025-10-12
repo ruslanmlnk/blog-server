@@ -18,6 +18,7 @@ export const HomeTrends: Block = {
       label: 'Items',
       minRows: 1,
       fields: [
+        { name: 'visibleFrom', label: 'Visible From', type: 'date', required: false, admin: { date: { pickerAppearance: 'dayAndTime', displayFormat: 'yyyy-MM-dd HH:mm' } } },
         {
           name: 'article',
           label: 'Article',

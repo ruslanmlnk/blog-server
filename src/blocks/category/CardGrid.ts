@@ -11,6 +11,7 @@ export const CategoryCardGrid: Block = {
       minRows: 1,
       // Remove maxRows to allow any number of cards
       fields: [
+        { name: 'visibleFrom', label: 'Visible From', type: 'date', required: false, admin: { date: { pickerAppearance: 'dayAndTime', displayFormat: 'yyyy-MM-dd HH:mm' } } },
         {
           name: 'article',
           label: 'Article',
