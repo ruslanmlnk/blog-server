@@ -3,6 +3,7 @@ import { authenticated } from '@/app/access/authenticated'
 
 import type { CollectionConfig } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { EXPERIMENTAL_TableFeature } from '@payloadcms/richtext-lexical'
 import { TextSizeFeature } from 'payload-lexical-typography'
 
 function transliterate(text: string): string {
@@ -92,6 +93,7 @@ export const Articles: CollectionConfig = {
       editor: lexicalEditor({
         features: ({ defaultFeatures }) => [
           ...defaultFeatures,
+          EXPERIMENTAL_TableFeature(),
           TextSizeFeature({
             sizes: [
               { value: '12px', label: '12' },
@@ -113,4 +115,3 @@ export const Articles: CollectionConfig = {
     },
   ],
 }
-

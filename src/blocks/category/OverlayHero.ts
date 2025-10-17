@@ -4,7 +4,7 @@ export const CategoryOverlayHero: Block = {
   slug: 'categoryOverlayHero',
   labels: { singular: 'Overlay Hero', plural: 'Overlay Heroes' },
   fields: [
-    { name: 'visibleFrom', label: 'Visible From', type: 'date', required: false, admin: { date: { pickerAppearance: 'dayAndTime', displayFormat: 'yyyy-MM-dd HH:mm' } } },
+    { name: 'visibleFrom', label: 'publicationDate', type: 'date', required: false, admin: { date: { pickerAppearance: 'dayAndTime', displayFormat: 'yyyy-MM-dd HH:mm' } } },
     {
       name: 'article',
       label: 'Article',

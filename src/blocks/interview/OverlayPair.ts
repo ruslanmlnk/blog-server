@@ -10,7 +10,7 @@ export const InterviewOverlayPair: Block = {
       type: 'array',
       required: true,
       fields: [
-        { name: 'visibleFrom', label: 'Visible From', type: 'date', required: false, admin: { date: { pickerAppearance: 'dayAndTime', displayFormat: 'yyyy-MM-dd HH:mm' } } },
+        { name: 'visibleFrom', label: 'publicationDate', type: 'date', required: false, admin: { date: { pickerAppearance: 'dayAndTime', displayFormat: 'yyyy-MM-dd HH:mm' } } },
         { name: 'href', label: 'Link URL', type: 'text', required: true },
         { name: 'title', type: 'text', required: true },
         { name: 'image', label: 'Image', type: 'upload', relationTo: 'media', required: true },
