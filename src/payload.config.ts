@@ -23,8 +23,24 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
-  serverURL: 'http://localhost:3001',
-  cors: ['http://localhost:3000'],
+  serverURL: 'https://api.parubets.org',
+cors: [
+  'https://parubets.com',
+  'https://parubets.org',
+  'http://localhost:3000',
+  'https://api.parubets.org',
+  'https://api.parubets.com',
+  'http://localhost:3001'
+],
+csrf: [
+  'https://parubets.com',
+  'https://parubets.org',
+  'http://localhost:3000',
+  'https://api.parubets.org',
+  'https://api.parubets.com',
+  'http://localhost:3001'
+],
+
   localization: {
     locales: [
       { code: 'ru', label: 'Русский' },

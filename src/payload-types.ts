@@ -338,7 +338,6 @@ export interface Press {
   content?:
     | (
         | {
-            date?: string | null;
             visibleFrom?: string | null;
             href: string;
             title: string;
@@ -350,7 +349,6 @@ export interface Press {
           }
         | {
             items: {
-              date?: string | null;
               visibleFrom?: string | null;
               href: string;
               title: string;
@@ -736,7 +734,6 @@ export interface PressSelect<T extends boolean = true> {
         pressOverlayHero?:
           | T
           | {
-              date?: T;
               visibleFrom?: T;
               href?: T;
               title?: T;
@@ -751,7 +748,6 @@ export interface PressSelect<T extends boolean = true> {
               items?:
                 | T
                 | {
-                    date?: T;
                     visibleFrom?: T;
                     href?: T;
                     title?: T;
