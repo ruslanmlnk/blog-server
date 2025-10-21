@@ -1,6 +1,7 @@
 import { createHeadlessEditor } from '@lexical/headless'
 import { $generateNodesFromDOM } from '@lexical/html'
-import { HeadingNode, QuoteNode, ParagraphNode } from '@lexical/rich-text'
+import { HeadingNode, QuoteNode } from '@lexical/rich-text'
+import { ParagraphNode } from 'lexical'
 import { ListItemNode, ListNode } from '@lexical/list'
 import { LinkNode } from '@lexical/link'
 import { CodeNode } from '@lexical/code'
