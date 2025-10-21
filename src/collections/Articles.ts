@@ -60,9 +60,16 @@ export const Articles: CollectionConfig = {
             const preview = typeof importRef === 'object' ? { id: (importRef as any)?.id, filename: (importRef as any)?.filename } : importRef
             logger.info?.(`[articles/import] doc.importFile raw=${JSON.stringify(preview)}`)
           } catch {}
-          const importId: string | undefined = typeof importRef === 'string' ? importRef : importRef?.id
+          const importId: string | undefined =
+            typeof importRef === 'string'
+              ? importRef
+              : typeof importRef === 'number'
+              ? String(importRef)
+              : importRef?.id != null
+              ? String(importRef.id)
+              : undefined
           if (!importId) {
-            logger.info?.('[articles/import] no importFile set — skipping')
+            logger.info?.('[articles/import] no importFile set - skipping')
             return
           }
 
@@ -71,7 +78,7 @@ export const Articles: CollectionConfig = {
           const mediaDoc = await req.payload.findByID({ collection: 'media', id: importId })
           const filename: string | undefined = (mediaDoc as any)?.filename || (mediaDoc as any)?.file?.filename
           if (!filename) {
-            logger.warn?.('[articles/import] media has no filename — abort')
+            logger.warn?.('[articles/import] media has no filename - abort')
             return
           }
 
@@ -93,7 +100,7 @@ export const Articles: CollectionConfig = {
             }
           }
           if (!fullPath) {
-            logger.warn?.('[articles/import] file not found on disk — abort')
+            logger.warn?.('[articles/import] file not found on disk - abort')
             return
           }
 
@@ -153,7 +160,7 @@ export const Articles: CollectionConfig = {
               if (!(doc as any)?.description && compact) updateData.description = compact.slice(0, 160)
             }
           } else {
-            logger.warn?.('[articles/import] unsupported file extension — skipping')
+            logger.warn?.('[articles/import] unsupported file extension - skipping')
           }
 
           if (Object.keys(updateData).length > 0) {
