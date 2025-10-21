@@ -180,7 +180,7 @@ export const Articles: CollectionConfig = {
               "p[style-name='Title'] => h1:fresh",
             ]
             const [{ value: html }, { value: rawText }] = await Promise.all([
-              mammoth.convertToHtml({ path: fullPath, styleMap }),
+              mammoth.convertToHtml({ path: fullPath }, { styleMap }),
               mammoth.extractRawText({ path: fullPath }),
             ])
             const plain = rawText || ''
