@@ -111,8 +111,28 @@ export const Articles: CollectionConfig = {
 
           if (ext === '.docx') {
             logger.info?.('[articles/import] .docx: mammoth.convertToHtml start')
+            const styleMap = [
+              "p[style-name='Heading 1'] => h1:fresh",
+              "p[style-name='Heading 2'] => h2:fresh",
+              "p[style-name='Heading 3'] => h3:fresh",
+              "p[style-name='Heading 4'] => h4:fresh",
+              "p[style-name='Heading 5'] => h5:fresh",
+              "p[style-name='Heading 6'] => h6:fresh",
+              "p[style-id='Heading1'] => h1:fresh",
+              "p[style-id='Heading2'] => h2:fresh",
+              "p[style-id='Heading3'] => h3:fresh",
+              "p[style-id='Heading4'] => h4:fresh",
+              "p[style-id='Heading5'] => h5:fresh",
+              "p[style-id='Heading6'] => h6:fresh",
+              // Localized/common names
+              "p[style-name='Заголовок 1'] => h1:fresh",
+              "p[style-name='Заголовок 2'] => h2:fresh",
+              "p[style-name='Заголовок 3'] => h3:fresh",
+              "p[style-name='Назва'] => h1:fresh",
+              "p[style-name='Title'] => h1:fresh",
+            ]
             const [{ value: html }, { value: rawText }] = await Promise.all([
-              mammoth.convertToHtml({ path: fullPath }),
+              mammoth.convertToHtml({ path: fullPath, styleMap }),
               mammoth.extractRawText({ path: fullPath }),
             ])
             const plain = rawText || ''
@@ -132,26 +152,34 @@ export const Articles: CollectionConfig = {
                     .split(/\n\s*\n/)
                     .map((p) => p.trim())
                     .filter(Boolean)
+                  const children = (paras.length ? paras : ['']).map((p, idx) => (
+                    idx === 0
+                      ? {
+                          type: 'heading',
+                          tag: 'h1',
+                          version: 1,
+                          format: '',
+                          indent: 0,
+                          direction: 'ltr',
+                          children: [
+                            { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' },
+                          ],
+                        }
+                      : {
+                          type: 'paragraph',
+                          version: 1,
+                          format: '',
+                          indent: 0,
+                          direction: 'ltr',
+                          children: [
+                            { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' },
+                          ],
+                        }
+                  ))
                   lexical = {
-                    root: {
-                      type: 'root',
-                      version: 1,
-                      format: '',
-                      indent: 0,
-                      direction: 'ltr',
-                      children: (paras.length ? paras : ['']).map((p) => ({
-                        type: 'paragraph',
-                        version: 1,
-                        format: '',
-                        indent: 0,
-                        direction: 'ltr',
-                        children: [
-                          { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' },
-                        ],
-                      })),
-                    },
+                    root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children },
                   }
-                  logger.info?.(`[articles/import] .docx: built ${paras.length} paragraphs from plain text`)
+                  logger.info?.(`[articles/import] .docx: built ${children.length} nodes; first as heading`)
                 }
               } catch { }
               ; (data as any).richContent = lexical
@@ -176,14 +204,30 @@ export const Articles: CollectionConfig = {
                 .map((p) => p.trim())
                 .filter(Boolean)
               logger.info?.(`[articles/import] .doc: paragraphs=${paras.length}`)
-              const children = (paras.length ? paras : ['']).map((p) => ({
-                type: 'paragraph',
-                version: 1,
-                format: '',
-                indent: 0,
-                direction: 'ltr',
-                children: [{ type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' }],
-              }))
+              const children = (paras.length ? paras : ['']).map((p, idx) => (
+                idx === 0
+                  ? {
+                      type: 'heading',
+                      tag: 'h1',
+                      version: 1,
+                      format: '',
+                      indent: 0,
+                      direction: 'ltr',
+                      children: [
+                        { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' },
+                      ],
+                    }
+                  : {
+                      type: 'paragraph',
+                      version: 1,
+                      format: '',
+                      indent: 0,
+                      direction: 'ltr',
+                      children: [
+                        { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' },
+                      ],
+                    }
+              ))
                 ; (data as any).richContent = {
                   root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children },
                 }
