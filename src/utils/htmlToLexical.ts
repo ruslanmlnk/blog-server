@@ -25,11 +25,10 @@ export async function htmlToLexicalState(html: string): Promise<unknown> {
     onError: () => void 0,
   })
 
-  const dom = new JSDOM(`<div id="root">${html}</div>`)
-  const container = dom.window.document.getElementById('root') || dom.window.document.body
+  const dom = new JSDOM(`<!doctype html><html><body>${html}</body></html>`)
 
   editor.update(() => {
-    const nodes = $generateNodesFromDOM(editor, container)
+    const nodes = $generateNodesFromDOM(editor, dom.window.document)
     const root = $getRoot()
     root.clear()
     nodes.forEach((n) => root.append(n))
@@ -37,4 +36,3 @@ export async function htmlToLexicalState(html: string): Promise<unknown> {
 
   return editor.getEditorState().toJSON()
 }
-
