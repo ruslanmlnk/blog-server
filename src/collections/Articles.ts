@@ -111,8 +111,13 @@ export const Articles: CollectionConfig = {
 
           if (ext === '.docx') {
             logger.info?.('[articles/import] .docx: mammoth.convertToHtml start')
-            const { value: html } = await mammoth.convertToHtml({ path: fullPath })
+            const [{ value: html }, { value: rawText }] = await Promise.all([
+              mammoth.convertToHtml({ path: fullPath }),
+              mammoth.extractRawText({ path: fullPath }),
+            ])
+            const plain = rawText || ''
             logger.info?.(`[articles/import] .docx: html length=${html?.length ?? 0}`)
+            logger.info?.(`[articles/import] .docx: raw text length=${plain.length}`)
             if (html && html.trim()) {
               logger.info?.('[articles/import] .docx: htmlToLexicalState start')
               let lexical: any = await htmlToLexicalState(html)
@@ -121,7 +126,12 @@ export const Articles: CollectionConfig = {
                 const childCount = lexical?.root?.children?.length ?? 0
                 logger.info?.(`[articles/import] .docx: lexical root children=${childCount}`)
                 if (!lexical?.root || childCount === 0) {
-                  logger.warn?.('[articles/import] .docx: empty root detected - applying fallback paragraph')
+                  logger.warn?.('[articles/import] .docx: empty root detected - building paragraphs from plain text')
+                  const paras = String(plain)
+                    .replace(/\r\n/g, '\n')
+                    .split(/\n\s*\n/)
+                    .map((p) => p.trim())
+                    .filter(Boolean)
                   lexical = {
                     root: {
                       type: 'root',
@@ -129,26 +139,22 @@ export const Articles: CollectionConfig = {
                       format: '',
                       indent: 0,
                       direction: 'ltr',
-                      children: [
-                        {
-                          type: 'paragraph',
-                          version: 1,
-                          format: '',
-                          indent: 0,
-                          direction: 'ltr',
-                          children: [
-                            { type: 'text', version: 1, text: '', detail: 0, format: 0, mode: 'normal', style: '' },
-                          ],
-                        },
-                      ],
+                      children: (paras.length ? paras : ['']).map((p) => ({
+                        type: 'paragraph',
+                        version: 1,
+                        format: '',
+                        indent: 0,
+                        direction: 'ltr',
+                        children: [
+                          { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' },
+                        ],
+                      })),
                     },
                   }
+                  logger.info?.(`[articles/import] .docx: built ${paras.length} paragraphs from plain text`)
                 }
               } catch { }
               ; (data as any).richContent = lexical
-              logger.info?.('[articles/import] .docx: mammoth.extractRawText start')
-              const plain = (await mammoth.extractRawText({ path: fullPath })).value || ''
-              logger.info?.(`[articles/import] .docx: raw text length=${plain.length}`)
               const firstLine = String(plain).split(/\n/).find((l) => l.trim())?.trim()
               logger.info?.(`[articles/import] .docx: firstLine=${firstLine?.slice(0, 80)}`)
               const hasTitle = Boolean((data as any)?.title ?? (originalDoc as any)?.title)
