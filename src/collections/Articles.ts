@@ -48,18 +48,20 @@ export const Articles: CollectionConfig = {
 
   hooks: {
     beforeValidate: [],
-    afterChange: [
-      async ({ doc, req, operation }) => {
+    beforeChange: [
+      // 1) Import pipeline before save to avoid nested update/locks
+      async ({ data, req, operation, originalDoc }) => {
         try {
           const logger: any = (req as any)?.payload?.logger ?? console
-          const articleId = (doc as any)?.id
-          logger.info?.(`[articles/import] afterChange start op=${operation} id=${articleId}`)
+          const artId = (originalDoc as any)?.id || (data as any)?.id
+          logger.info?.(`[articles/import] beforeChange start op=${operation} id=${artId}`)
 
-          const importRef: any = (doc as any)?.importFile
+          const importRef: any = (data as any)?.importFile ?? (originalDoc as any)?.importFile
           try {
             const preview = typeof importRef === 'object' ? { id: (importRef as any)?.id, filename: (importRef as any)?.filename } : importRef
-            logger.info?.(`[articles/import] doc.importFile raw=${JSON.stringify(preview)}`)
+            logger.info?.(`[articles/import] data.importFile raw=${JSON.stringify(preview)}`)
           } catch {}
+
           const importId: string | undefined =
             typeof importRef === 'string'
               ? importRef
@@ -68,22 +70,21 @@ export const Articles: CollectionConfig = {
               : importRef?.id != null
               ? String(importRef.id)
               : undefined
+
           if (!importId) {
             logger.info?.('[articles/import] no importFile set - skipping')
-            return
+            return data
           }
 
           logger.info?.(`[articles/import] import media id=${importId}`)
-
           const mediaDoc = await req.payload.findByID({ collection: 'media', id: importId })
           const filename: string | undefined = (mediaDoc as any)?.filename || (mediaDoc as any)?.file?.filename
           if (!filename) {
             logger.warn?.('[articles/import] media has no filename - abort')
-            return
+            return data
           }
 
           logger.info?.(`[articles/import] media filename=${filename}`)
-
           const candidatePaths = [
             path.resolve(process.cwd(), 'media', filename),
             path.resolve(process.cwd(), 'public', 'media', filename),
@@ -101,15 +102,13 @@ export const Articles: CollectionConfig = {
           }
           if (!fullPath) {
             logger.warn?.('[articles/import] file not found on disk - abort')
-            return
+            return data
           }
 
           logger.info?.(`[articles/import] resolved path=${fullPath}`)
-
           const ext = path.extname(fullPath).toLowerCase()
           logger.info?.(`[articles/import] file ext=${ext}`)
 
-          let updateData: any = {}
           if (ext === '.docx') {
             logger.info?.('[articles/import] .docx: mammoth.convertToHtml start')
             const { value: html } = await mammoth.convertToHtml({ path: fullPath })
@@ -118,16 +117,17 @@ export const Articles: CollectionConfig = {
               logger.info?.('[articles/import] .docx: htmlToLexicalState start')
               const lexical = await htmlToLexicalState(html)
               logger.info?.('[articles/import] .docx: htmlToLexicalState done')
-              updateData.richContent = lexical
-              // Also auto-fill title/description if empty
+              ;(data as any).richContent = lexical
               logger.info?.('[articles/import] .docx: mammoth.extractRawText start')
               const plain = (await mammoth.extractRawText({ path: fullPath })).value || ''
               logger.info?.(`[articles/import] .docx: raw text length=${plain.length}`)
               const firstLine = String(plain).split(/\n/).find((l) => l.trim())?.trim()
               logger.info?.(`[articles/import] .docx: firstLine=${firstLine?.slice(0, 80)}`)
-              if (!(doc as any)?.title && firstLine) updateData.title = firstLine.slice(0, 120)
+              const hasTitle = Boolean((data as any)?.title ?? (originalDoc as any)?.title)
+              if (!hasTitle && firstLine) (data as any).title = firstLine.slice(0, 120)
               const compact = String(plain).replace(/\s+/g, ' ').trim()
-              if (!(doc as any)?.description && compact) updateData.description = compact.slice(0, 160)
+              const hasDesc = Boolean((data as any)?.description ?? (originalDoc as any)?.description)
+              if (!hasDesc && compact) (data as any).description = compact.slice(0, 160)
             }
           } else if (ext === '.doc') {
             logger.info?.('[articles/import] .doc: WordExtractor start')
@@ -150,45 +150,35 @@ export const Articles: CollectionConfig = {
                 direction: 'ltr',
                 children: [{ type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' }],
               }))
-              updateData.richContent = {
+              ;(data as any).richContent = {
                 root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children },
               }
               const firstLine = String(text).split(/\n/).find((l) => l.trim())?.trim()
               logger.info?.(`[articles/import] .doc: firstLine=${firstLine?.slice(0, 80)}`)
-              if (!(doc as any)?.title && firstLine) updateData.title = firstLine.slice(0, 120)
+              const hasTitle = Boolean((data as any)?.title ?? (originalDoc as any)?.title)
+              if (!hasTitle && firstLine) (data as any).title = firstLine.slice(0, 120)
               const compact = String(text).replace(/\s+/g, ' ').trim()
-              if (!(doc as any)?.description && compact) updateData.description = compact.slice(0, 160)
+              const hasDesc = Boolean((data as any)?.description ?? (originalDoc as any)?.description)
+              if (!hasDesc && compact) (data as any).description = compact.slice(0, 160)
             }
           } else {
             logger.warn?.('[articles/import] unsupported file extension - skipping')
           }
 
-          if (Object.keys(updateData).length > 0) {
-            updateData.importFile = undefined
-            logger.info?.(`[articles/import] updating article id=${(doc as any).id} fields=${Object.keys(updateData).join(',')}`)
-            await req.payload.update({
-              collection: 'articles',
-              id: (doc as any).id,
-              data: updateData,
-              overrideAccess: true,
-              locale: (req as any)?.locale || (req as any)?.i18n?.language || 'ru',
-              depth: 0,
-              disableTransaction: true,
-            })
-            logger.info?.('[articles/import] update complete')
-          } else {
-            logger.info?.('[articles/import] nothing to update')
-          }
+          // clear importFile to avoid re-processing loops
+          ;(data as any).importFile = null
+          logger.info?.('[articles/import] beforeChange set importFile=null')
+
+          return data
         } catch (e) {
           const msg = e instanceof Error ? `${e.message}\n${e.stack}` : String(e)
           try {
-            ;((req as any)?.payload?.logger ?? console).error?.(`[articles/import] error: ${msg}`)
+            ;((req as any)?.payload?.logger ?? console).error?.(`[articles/import] beforeChange error: ${msg}`)
           } catch {}
-          // noop: avoid breaking save if import fails
+          return data
         }
       },
-    ],
-    beforeChange: [
+      // 2) Slug generation after import sets title
       ({ data }) => {
         if (data.title && !data.slug) {
           data.slug = transliterate(data.title)
@@ -196,6 +186,7 @@ export const Articles: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [],
   },
 
   fields: [
