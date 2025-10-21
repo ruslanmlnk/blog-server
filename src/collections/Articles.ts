@@ -77,6 +77,7 @@ export const Articles: CollectionConfig = {
           const ext = path.extname(fullPath).toLowerCase()
 
           let rawText = ''
+          let imported = false
           if (ext === '.docx') {
             const { value: html } = await mammoth.convertToHtml({ path: fullPath })
             if (html && html.trim()) {
@@ -89,6 +90,7 @@ export const Articles: CollectionConfig = {
               } else {
                 ;(data as any).richContent = { [locale]: lexical }
               }
+              imported = true
             } else {
               const result = await mammoth.extractRawText({ path: fullPath })
               rawText = result.value || ''
@@ -149,6 +151,9 @@ export const Articles: CollectionConfig = {
           setLocalized(data as any, 'title', (firstLine || '').slice(0, 120))
           setLocalized(data as any, 'description', (plain || '').slice(0, 160))
 
+          if (imported || (rawText && String(rawText).trim())) {
+            ;(data as any).importFile = undefined
+          }
           return data
         } catch (e) {
           return data
