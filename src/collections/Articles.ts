@@ -152,6 +152,92 @@ export const Articles: CollectionConfig = {
         }
       },
     ],
+    afterChange: [
+      async ({ doc, req, operation }) => {
+        try {
+          const importRef: any = (doc as any)?.importFile
+          const importId: string | undefined = typeof importRef === 'string' ? importRef : importRef?.id
+          if (!importId) return
+
+          const mediaDoc = await req.payload.findByID({ collection: 'media', id: importId })
+          const filename: string | undefined = (mediaDoc as any)?.filename || (mediaDoc as any)?.file?.filename
+          if (!filename) return
+
+          const candidatePaths = [
+            path.resolve(process.cwd(), 'media', filename),
+            path.resolve(process.cwd(), 'public', 'media', filename),
+          ]
+          let fullPath = candidatePaths.find((p) => fs.existsSync(p)) || ''
+          if (!fullPath) {
+            const url: string | undefined = (mediaDoc as any)?.url
+            if (url) {
+              const clean = url.replace(/^\//, '')
+              const fromUrlA = path.resolve(process.cwd(), clean)
+              const fromUrlB = path.resolve(process.cwd(), 'public', clean)
+              fullPath = [fromUrlA, fromUrlB].find((p) => fs.existsSync(p)) || ''
+            }
+          }
+          if (!fullPath) return
+
+          const ext = path.extname(fullPath).toLowerCase()
+
+          let updateData: any = {}
+          if (ext === '.docx') {
+            const { value: html } = await mammoth.convertToHtml({ path: fullPath })
+            if (html && html.trim()) {
+              const lexical = await htmlToLexicalState(html)
+              updateData.richContent = lexical
+              // Also auto-fill title/description if empty
+              const plain = (await mammoth.extractRawText({ path: fullPath })).value || ''
+              const firstLine = String(plain).split(/\n/).find((l) => l.trim())?.trim()
+              if (!(doc as any)?.title && firstLine) updateData.title = firstLine.slice(0, 120)
+              const compact = String(plain).replace(/\s+/g, ' ').trim()
+              if (!(doc as any)?.description && compact) updateData.description = compact.slice(0, 160)
+            }
+          } else if (ext === '.doc') {
+            const extractor = new WordExtractor()
+            const parsed = await extractor.extract(fullPath)
+            const text = parsed?.getBody?.() || ''
+            if (text) {
+              const paras = String(text)
+                .replace(/\r\n/g, '\n')
+                .split(/\n\s*\n/)
+                .map((p) => p.trim())
+                .filter(Boolean)
+              const children = (paras.length ? paras : ['']).map((p) => ({
+                type: 'paragraph',
+                version: 1,
+                format: '',
+                indent: 0,
+                direction: 'ltr',
+                children: [{ type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' }],
+              }))
+              updateData.richContent = {
+                root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children },
+              }
+              const firstLine = String(text).split(/\n/).find((l) => l.trim())?.trim()
+              if (!(doc as any)?.title && firstLine) updateData.title = firstLine.slice(0, 120)
+              const compact = String(text).replace(/\s+/g, ' ').trim()
+              if (!(doc as any)?.description && compact) updateData.description = compact.slice(0, 160)
+            }
+          }
+
+          if (Object.keys(updateData).length > 0) {
+            updateData.importFile = undefined
+            await req.payload.update({
+              collection: 'articles',
+              id: (doc as any).id,
+              data: updateData,
+              overrideAccess: true,
+              locale: (req as any)?.locale || (req as any)?.i18n?.language || 'ru',
+              depth: 0,
+            })
+          }
+        } catch (e) {
+          // noop: avoid breaking save if import fails
+        }
+      },
+    ],
     beforeChange: [
       ({ data }) => {
         if (data.title && !data.slug) {
