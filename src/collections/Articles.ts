@@ -51,19 +51,34 @@ export const Articles: CollectionConfig = {
     afterChange: [
       async ({ doc, req, operation }) => {
         try {
+          const logger: any = (req as any)?.payload?.logger ?? console
+          const articleId = (doc as any)?.id
+          logger.info?.(`[articles/import] afterChange start op=${operation} id=${articleId}`)
+
           const importRef: any = (doc as any)?.importFile
           const importId: string | undefined = typeof importRef === 'string' ? importRef : importRef?.id
-          if (!importId) return
+          if (!importId) {
+            logger.info?.('[articles/import] no importFile set — skipping')
+            return
+          }
+
+          logger.info?.(`[articles/import] import media id=${importId}`)
 
           const mediaDoc = await req.payload.findByID({ collection: 'media', id: importId })
           const filename: string | undefined = (mediaDoc as any)?.filename || (mediaDoc as any)?.file?.filename
-          if (!filename) return
+          if (!filename) {
+            logger.warn?.('[articles/import] media has no filename — abort')
+            return
+          }
+
+          logger.info?.(`[articles/import] media filename=${filename}`)
 
           const candidatePaths = [
             path.resolve(process.cwd(), 'media', filename),
             path.resolve(process.cwd(), 'public', 'media', filename),
           ]
           let fullPath = candidatePaths.find((p) => fs.existsSync(p)) || ''
+          logger.info?.(`[articles/import] candidates: ${candidatePaths.join(' | ')}`)
           if (!fullPath) {
             const url: string | undefined = (mediaDoc as any)?.url
             if (url) {
@@ -73,33 +88,49 @@ export const Articles: CollectionConfig = {
               fullPath = [fromUrlA, fromUrlB].find((p) => fs.existsSync(p)) || ''
             }
           }
-          if (!fullPath) return
+          if (!fullPath) {
+            logger.warn?.('[articles/import] file not found on disk — abort')
+            return
+          }
+
+          logger.info?.(`[articles/import] resolved path=${fullPath}`)
 
           const ext = path.extname(fullPath).toLowerCase()
+          logger.info?.(`[articles/import] file ext=${ext}`)
 
           let updateData: any = {}
           if (ext === '.docx') {
+            logger.info?.('[articles/import] .docx: mammoth.convertToHtml start')
             const { value: html } = await mammoth.convertToHtml({ path: fullPath })
+            logger.info?.(`[articles/import] .docx: html length=${html?.length ?? 0}`)
             if (html && html.trim()) {
+              logger.info?.('[articles/import] .docx: htmlToLexicalState start')
               const lexical = await htmlToLexicalState(html)
+              logger.info?.('[articles/import] .docx: htmlToLexicalState done')
               updateData.richContent = lexical
               // Also auto-fill title/description if empty
+              logger.info?.('[articles/import] .docx: mammoth.extractRawText start')
               const plain = (await mammoth.extractRawText({ path: fullPath })).value || ''
+              logger.info?.(`[articles/import] .docx: raw text length=${plain.length}`)
               const firstLine = String(plain).split(/\n/).find((l) => l.trim())?.trim()
+              logger.info?.(`[articles/import] .docx: firstLine=${firstLine?.slice(0, 80)}`)
               if (!(doc as any)?.title && firstLine) updateData.title = firstLine.slice(0, 120)
               const compact = String(plain).replace(/\s+/g, ' ').trim()
               if (!(doc as any)?.description && compact) updateData.description = compact.slice(0, 160)
             }
           } else if (ext === '.doc') {
+            logger.info?.('[articles/import] .doc: WordExtractor start')
             const extractor = new WordExtractor()
             const parsed = await extractor.extract(fullPath)
             const text = parsed?.getBody?.() || ''
+            logger.info?.(`[articles/import] .doc: text length=${text.length}`)
             if (text) {
               const paras = String(text)
                 .replace(/\r\n/g, '\n')
                 .split(/\n\s*\n/)
                 .map((p) => p.trim())
                 .filter(Boolean)
+              logger.info?.(`[articles/import] .doc: paragraphs=${paras.length}`)
               const children = (paras.length ? paras : ['']).map((p) => ({
                 type: 'paragraph',
                 version: 1,
@@ -112,14 +143,18 @@ export const Articles: CollectionConfig = {
                 root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children },
               }
               const firstLine = String(text).split(/\n/).find((l) => l.trim())?.trim()
+              logger.info?.(`[articles/import] .doc: firstLine=${firstLine?.slice(0, 80)}`)
               if (!(doc as any)?.title && firstLine) updateData.title = firstLine.slice(0, 120)
               const compact = String(text).replace(/\s+/g, ' ').trim()
               if (!(doc as any)?.description && compact) updateData.description = compact.slice(0, 160)
             }
+          } else {
+            logger.warn?.('[articles/import] unsupported file extension — skipping')
           }
 
           if (Object.keys(updateData).length > 0) {
             updateData.importFile = undefined
+            logger.info?.(`[articles/import] updating article id=${(doc as any).id} fields=${Object.keys(updateData).join(',')}`)
             await req.payload.update({
               collection: 'articles',
               id: (doc as any).id,
@@ -129,8 +164,15 @@ export const Articles: CollectionConfig = {
               depth: 0,
               disableTransaction: true,
             })
+            logger.info?.('[articles/import] update complete')
+          } else {
+            logger.info?.('[articles/import] nothing to update')
           }
         } catch (e) {
+          const msg = e instanceof Error ? `${e.message}\n${e.stack}` : String(e)
+          try {
+            ;((req as any)?.payload?.logger ?? console).error?.(`[articles/import] error: ${msg}`)
+          } catch {}
           // noop: avoid breaking save if import fails
         }
       },
