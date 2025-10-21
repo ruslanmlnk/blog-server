@@ -4,6 +4,7 @@ import { authenticated } from '@/app/access/authenticated'
 import type { CollectionConfig } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
+import fs from 'fs'
 import * as mammoth from 'mammoth'
 import { htmlToLexicalState } from '@/utils/htmlToLexical'
 // word-extractor has no types
@@ -57,7 +58,22 @@ export const Articles: CollectionConfig = {
           const filename: string | undefined = (mediaDoc as any)?.filename || (mediaDoc as any)?.file?.filename
           if (!filename) return data
 
-          const fullPath = path.resolve(process.cwd(), 'media', filename)
+          const candidatePaths = [
+            path.resolve(process.cwd(), 'media', filename),
+            path.resolve(process.cwd(), 'public', 'media', filename),
+          ]
+          let fullPath = candidatePaths.find((p) => fs.existsSync(p)) || ''
+          if (!fullPath) {
+            const url: string | undefined = (mediaDoc as any)?.url
+            if (url) {
+              const clean = url.replace(/^\//, '')
+              const fromUrlA = path.resolve(process.cwd(), clean)
+              const fromUrlB = path.resolve(process.cwd(), 'public', clean)
+              fullPath = [fromUrlA, fromUrlB].find((p) => fs.existsSync(p)) || ''
+            }
+          }
+          if (!fullPath) return data
+
           const ext = path.extname(fullPath).toLowerCase()
 
           let rawText = ''
@@ -65,7 +81,14 @@ export const Articles: CollectionConfig = {
             const { value: html } = await mammoth.convertToHtml({ path: fullPath })
             if (html && html.trim()) {
               const lexical = await htmlToLexicalState(html)
-              ;(data as any).richContent = lexical
+              const locale = req.locale || req?.i18n?.language || 'ru'
+              const rc = (data as any).richContent || {}
+              if (typeof rc === 'object') {
+                rc[locale] = lexical
+                ;(data as any).richContent = rc
+              } else {
+                ;(data as any).richContent = { [locale]: lexical }
+              }
             } else {
               const result = await mammoth.extractRawText({ path: fullPath })
               rawText = result.value || ''
@@ -78,7 +101,7 @@ export const Articles: CollectionConfig = {
             return data
           }
 
-          if (!('richContent' in (data as any))) {
+          if (!((data as any).richContent)) {
             const text = String(rawText || '').replace(/\r\n/g, '\n').trim()
             if (text) {
               const paras = text
@@ -95,7 +118,7 @@ export const Articles: CollectionConfig = {
                   { type: 'text', version: 1, text: p },
                 ],
               }))
-              ;(data as any).richContent = {
+              const lexical = {
                 root: {
                   type: 'root',
                   version: 1,
@@ -105,6 +128,8 @@ export const Articles: CollectionConfig = {
                   children,
                 },
               }
+              const locale = req.locale || req?.i18n?.language || 'ru'
+              ;(data as any).richContent = { [locale]: lexical }
             }
           }
 
