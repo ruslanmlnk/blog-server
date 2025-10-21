@@ -201,6 +201,36 @@ export const Articles: CollectionConfig = {
           ;(data as any).importFile = null
           logger.info?.('[articles/import] beforeChange set importFile=null')
 
+          // Ensure richContent is never empty on save
+          try {
+            const current = (data as any)?.richContent ?? (originalDoc as any)?.richContent
+            const children = current?.root?.children
+            if (!current?.root || !Array.isArray(children) || children.length === 0) {
+              ;(data as any).richContent = {
+                root: {
+                  type: 'root',
+                  version: 1,
+                  format: '',
+                  indent: 0,
+                  direction: 'ltr',
+                  children: [
+                    {
+                      type: 'paragraph',
+                      version: 1,
+                      format: '',
+                      indent: 0,
+                      direction: 'ltr',
+                      children: [
+                        { type: 'text', version: 1, text: '', detail: 0, format: 0, mode: 'normal', style: '' },
+                      ],
+                    },
+                  ],
+                },
+              }
+              logger.info?.('[articles/import] beforeChange normalized empty richContent')
+            }
+          } catch {}
+
           return data
         } catch (e) {
           const msg = e instanceof Error ? `${e.message}\n${e.stack}` : String(e)
@@ -219,6 +249,40 @@ export const Articles: CollectionConfig = {
       },
     ],
     afterChange: [],
+    afterRead: [
+      ({ doc, req }) => {
+        try {
+          const logger: any = (req as any)?.payload?.logger ?? console
+          const v: any = (doc as any)?.richContent
+          const children = v?.root?.children
+          if (!v?.root || !Array.isArray(children) || children.length === 0) {
+            ;(doc as any).richContent = {
+              root: {
+                type: 'root',
+                version: 1,
+                format: '',
+                indent: 0,
+                direction: 'ltr',
+                children: [
+                  {
+                    type: 'paragraph',
+                    version: 1,
+                    format: '',
+                    indent: 0,
+                    direction: 'ltr',
+                    children: [
+                      { type: 'text', version: 1, text: '', detail: 0, format: 0, mode: 'normal', style: '' },
+                    ],
+                  },
+                ],
+              },
+            }
+            logger.info?.(`[articles/import] afterRead sanitized empty richContent id=${(doc as any)?.id}`)
+          }
+        } catch {}
+        return doc
+      },
+    ],
   },
 
   fields: [
