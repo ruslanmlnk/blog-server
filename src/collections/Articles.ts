@@ -82,14 +82,7 @@ export const Articles: CollectionConfig = {
             const { value: html } = await mammoth.convertToHtml({ path: fullPath })
             if (html && html.trim()) {
               const lexical = await htmlToLexicalState(html)
-              const locale = req.locale || req?.i18n?.language || 'ru'
-              const rc = (data as any).richContent || {}
-              if (typeof rc === 'object') {
-                rc[locale] = lexical
-                ;(data as any).richContent = rc
-              } else {
-                ;(data as any).richContent = { [locale]: lexical }
-              }
+              ;(data as any).richContent = lexical
               imported = true
             } else {
               const result = await mammoth.extractRawText({ path: fullPath })
@@ -130,8 +123,7 @@ export const Articles: CollectionConfig = {
                   children,
                 },
               }
-              const locale = req.locale || req?.i18n?.language || 'ru'
-              ;(data as any).richContent = { [locale]: lexical }
+              ;(data as any).richContent = lexical
             }
           }
 
