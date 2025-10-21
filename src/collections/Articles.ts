@@ -33,6 +33,54 @@ function transliterate(text: string): string {
     .replace(/-+/g, '-')
 }
 
+function setFontSizeStyleOnTextNodes(node: any, sizePx: string): void {
+  try {
+    if (!node) return
+    if (node.type === 'text') {
+      const existing = String(node.style || '')
+      const cleaned = existing.replace(/font-size:\s*[^;]+;?/gi, '').trim()
+      node.style = cleaned ? `${cleaned}; font-size: ${sizePx}` : `font-size: ${sizePx}`
+      return
+    }
+    const children: any[] | undefined = Array.isArray((node as any)?.children) ? (node as any).children : undefined
+    if (children) children.forEach((c) => setFontSizeStyleOnTextNodes(c, sizePx))
+  } catch {}
+}
+
+function normalizeHeadingsToParagraphsWithSize(tree: any): any {
+  try {
+    const sizeMap: Record<string, string> = {
+      h1: '32px',
+      h2: '28px',
+      h3: '24px',
+      h4: '20px',
+      h5: '18px',
+      h6: '16px',
+    }
+
+    function transform(node: any): any {
+      if (!node || typeof node !== 'object') return node
+      let next = node
+      if (node.type === 'heading') {
+        const tag = String((node as any).tag || '').toLowerCase()
+        const size = sizeMap[tag] || '24px'
+        next = { ...node, type: 'paragraph' }
+        delete (next as any).tag
+        setFontSizeStyleOnTextNodes(next, size)
+      }
+      if (Array.isArray((next as any).children)) {
+        ;(next as any).children = (next as any).children.map(transform)
+      }
+      return next
+    }
+
+    if (tree?.root?.children) {
+      tree.root.children = tree.root.children.map(transform)
+    }
+  } catch {}
+  return tree
+}
+
 export const Articles: CollectionConfig = {
   slug: 'articles',
 
@@ -141,6 +189,8 @@ export const Articles: CollectionConfig = {
             if (html && html.trim()) {
               logger.info?.('[articles/import] .docx: htmlToLexicalState start')
               let lexical: any = await htmlToLexicalState(html)
+              // Normalize headings: no <h1> in body; convert all headings to paragraphs with font-size
+              lexical = normalizeHeadingsToParagraphsWithSize(lexical)
               logger.info?.('[articles/import] .docx: htmlToLexicalState done')
               try {
                 const childCount = lexical?.root?.children?.length ?? 0
@@ -155,14 +205,13 @@ export const Articles: CollectionConfig = {
                   const children = (paras.length ? paras : ['']).map((p, idx) => (
                     idx === 0
                       ? {
-                          type: 'heading',
-                          tag: 'h1',
+                          type: 'paragraph',
                           version: 1,
                           format: '',
                           indent: 0,
                           direction: 'ltr',
                           children: [
-                            { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' },
+                            { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: 'font-size: 32px' },
                           ],
                         }
                       : {
@@ -179,7 +228,7 @@ export const Articles: CollectionConfig = {
                   lexical = {
                     root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children },
                   }
-                  logger.info?.(`[articles/import] .docx: built ${children.length} nodes; first as heading`)
+                  logger.info?.(`[articles/import] .docx: built ${children.length} nodes; first as sized paragraph`)
                 }
               } catch { }
               ; (data as any).richContent = lexical
@@ -207,14 +256,13 @@ export const Articles: CollectionConfig = {
               const children = (paras.length ? paras : ['']).map((p, idx) => (
                 idx === 0
                   ? {
-                      type: 'heading',
-                      tag: 'h1',
+                      type: 'paragraph',
                       version: 1,
                       format: '',
                       indent: 0,
                       direction: 'ltr',
                       children: [
-                        { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' },
+                        { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: 'font-size: 32px' },
                       ],
                     }
                   : {
