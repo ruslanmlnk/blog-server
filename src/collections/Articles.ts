@@ -56,6 +56,10 @@ export const Articles: CollectionConfig = {
           logger.info?.(`[articles/import] afterChange start op=${operation} id=${articleId}`)
 
           const importRef: any = (doc as any)?.importFile
+          try {
+            const preview = typeof importRef === 'object' ? { id: (importRef as any)?.id, filename: (importRef as any)?.filename } : importRef
+            logger.info?.(`[articles/import] doc.importFile raw=${JSON.stringify(preview)}`)
+          } catch {}
           const importId: string | undefined = typeof importRef === 'string' ? importRef : importRef?.id
           if (!importId) {
             logger.info?.('[articles/import] no importFile set — skipping')
