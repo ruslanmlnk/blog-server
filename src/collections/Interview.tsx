@@ -4,6 +4,7 @@ import type { CollectionConfig } from 'payload'
 import { InterviewOverlayHero } from '@/blocks/interview/OverlayHero'
 import { InterviewCardGrid } from '@/blocks/interview/CardGrid'
 import { InterviewOverlayPair } from '@/blocks/interview/OverlayPair'
+import { seoFields } from '@/fields/seoFields'
 
 export const Interview: CollectionConfig = {
   slug: 'interview',
@@ -21,6 +22,18 @@ export const Interview: CollectionConfig = {
     useAsTitle: 'title',
   },
   fields: [
+    seoFields,
+{
+  name: 'sortOrder',
+  label: 'Sort order',
+  type: 'number',
+  defaultValue: 1,
+  index: true,
+  admin: {
+    position: 'sidebar',
+    description: 'Порядковий номер: 1 — перший, 2 — другий і т.д.',
+  },
+},
     {
       name: 'title',
       type: 'text',

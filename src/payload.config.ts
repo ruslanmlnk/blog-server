@@ -12,12 +12,18 @@ import { Media } from './collections/Media'
 import { Articles } from './collections/Articles'
 import { ArticleCategories } from './collections/ArticleCategories'
 import { Home } from './collections/Home'
+import { PrivacyPolicy } from './collections/PrivacyPolicy'
+
 import { About } from './collections/About'
 import { Contact } from './collections/Contact'
 import { Press } from './collections/Press'
 import { Interview } from './collections/Interview'
 import ContactMessages from './collections/ContactMessages'
 import WeeklyNewsletter from './collections/WeeklyNewsletter'
+
+import { PressHub } from './collections/PressHub'
+import { InterviewHub } from './collections/InterviewHub'
+
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -57,7 +63,11 @@ csrf: [
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Articles, ArticleCategories, Home, About, Contact, Press, Interview, ContactMessages, WeeklyNewsletter],
+  collections: [Users, PrivacyPolicy, Media, Articles, ArticleCategories, Home, About, Contact, Press, Interview, ContactMessages, WeeklyNewsletter],
+  globals: [
+  InterviewHub,
+  PressHub,
+],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

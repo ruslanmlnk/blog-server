@@ -1,6 +1,7 @@
 import { anyone } from '@/app/access/anyone'
 import { authenticated } from '@/app/access/authenticated'
 import type { CollectionConfig } from 'payload'
+import { seoFields } from '@/fields/seoFields'
 
 export const About: CollectionConfig = {
   slug: 'about',
@@ -18,6 +19,7 @@ export const About: CollectionConfig = {
     useAsTitle: 'title',
   },
   fields: [
+    seoFields,
     {
       name: 'title',
       type: 'text',
