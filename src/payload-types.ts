@@ -221,6 +221,10 @@ export interface Article {
   };
   title: string;
   /**
+   * Upload .doc or .docx to auto-fill Title, Description and Rich Content
+   */
+  importFile?: (number | null) | Media;
+  /**
    * Slug is generated from title, but can be overridden
    */
   slug: string;
@@ -686,6 +690,7 @@ export interface ArticlesSelect<T extends boolean = true> {
         metaDescription?: T;
       };
   title?: T;
+  importFile?: T;
   slug?: T;
   bg?: T;
   category?: T;

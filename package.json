@@ -31,6 +31,9 @@
     "payload-lexical-typography": "^0.5.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "jsdom": "26.1.0",
+    "mammoth": "^1.11.0",
+    "word-extractor": "^1.0.4",
     "sharp": "0.34.2"
   },
   "devDependencies": {
@@ -42,7 +45,6 @@
     "@vitejs/plugin-react": "4.5.2",
     "eslint": "^9.16.0",
     "eslint-config-next": "15.4.4",
-    "jsdom": "26.1.0",
     "playwright": "1.54.1",
     "playwright-core": "1.54.1",
     "prettier": "^3.4.2",
