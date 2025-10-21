@@ -115,8 +115,36 @@ export const Articles: CollectionConfig = {
             logger.info?.(`[articles/import] .docx: html length=${html?.length ?? 0}`)
             if (html && html.trim()) {
               logger.info?.('[articles/import] .docx: htmlToLexicalState start')
-              const lexical = await htmlToLexicalState(html)
+              let lexical: any = await htmlToLexicalState(html)
               logger.info?.('[articles/import] .docx: htmlToLexicalState done')
+              try {
+                const childCount = lexical?.root?.children?.length ?? 0
+                logger.info?.(`[articles/import] .docx: lexical root children=${childCount}`)
+                if (!lexical?.root || childCount === 0) {
+                  logger.warn?.('[articles/import] .docx: empty root detected - applying fallback paragraph')
+                  lexical = {
+                    root: {
+                      type: 'root',
+                      version: 1,
+                      format: '',
+                      indent: 0,
+                      direction: 'ltr',
+                      children: [
+                        {
+                          type: 'paragraph',
+                          version: 1,
+                          format: '',
+                          indent: 0,
+                          direction: 'ltr',
+                          children: [
+                            { type: 'text', version: 1, text: '', detail: 0, format: 0, mode: 'normal', style: '' },
+                          ],
+                        },
+                      ],
+                    },
+                  }
+                }
+              } catch {}
               ;(data as any).richContent = lexical
               logger.info?.('[articles/import] .docx: mammoth.extractRawText start')
               const plain = (await mammoth.extractRawText({ path: fullPath })).value || ''
@@ -153,6 +181,10 @@ export const Articles: CollectionConfig = {
               ;(data as any).richContent = {
                 root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children },
               }
+              try {
+                const childCount = ((data as any).richContent as any)?.root?.children?.length ?? 0
+                logger.info?.(`[articles/import] .doc: lexical root children=${childCount}`)
+              } catch {}
               const firstLine = String(text).split(/\n/).find((l) => l.trim())?.trim()
               logger.info?.(`[articles/import] .doc: firstLine=${firstLine?.slice(0, 80)}`)
               const hasTitle = Boolean((data as any)?.title ?? (originalDoc as any)?.title)
