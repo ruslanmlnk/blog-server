@@ -47,111 +47,7 @@ export const Articles: CollectionConfig = {
   },
 
   hooks: {
-    beforeValidate: [
-      async ({ data, req }) => {
-        try {
-          const importRef = (data as any)?.importFile
-          const importId = typeof importRef === 'string' ? importRef : importRef?.id
-          if (!importId) return data
-
-          const mediaDoc = await req.payload.findByID({ collection: 'media', id: importId })
-          const filename: string | undefined = (mediaDoc as any)?.filename || (mediaDoc as any)?.file?.filename
-          if (!filename) return data
-
-          const candidatePaths = [
-            path.resolve(process.cwd(), 'media', filename),
-            path.resolve(process.cwd(), 'public', 'media', filename),
-          ]
-          let fullPath = candidatePaths.find((p) => fs.existsSync(p)) || ''
-          if (!fullPath) {
-            const url: string | undefined = (mediaDoc as any)?.url
-            if (url) {
-              const clean = url.replace(/^\//, '')
-              const fromUrlA = path.resolve(process.cwd(), clean)
-              const fromUrlB = path.resolve(process.cwd(), 'public', clean)
-              fullPath = [fromUrlA, fromUrlB].find((p) => fs.existsSync(p)) || ''
-            }
-          }
-          if (!fullPath) return data
-
-          const ext = path.extname(fullPath).toLowerCase()
-
-          let rawText = ''
-          let imported = false
-          if (ext === '.docx') {
-            const { value: html } = await mammoth.convertToHtml({ path: fullPath })
-            if (html && html.trim()) {
-              const lexical = await htmlToLexicalState(html)
-              ;(data as any).richContent = lexical
-              imported = true
-            } else {
-              const result = await mammoth.extractRawText({ path: fullPath })
-              rawText = result.value || ''
-            }
-          } else if (ext === '.doc') {
-            const extractor = new WordExtractor()
-            const doc = await extractor.extract(fullPath)
-            rawText = doc?.getBody?.() || ''
-          } else {
-            return data
-          }
-
-          if (!((data as any).richContent)) {
-            const text = String(rawText || '').replace(/\r\n/g, '\n').trim()
-            if (text) {
-              const paras = text
-                .split(/\n\s*\n/)
-                .map((p) => p.trim())
-                .filter(Boolean)
-              const children = (paras.length ? paras : ['']).map((p) => ({
-                type: 'paragraph',
-                version: 1,
-                format: '',
-                indent: 0,
-                direction: 'ltr',
-                children: [
-                  { type: 'text', version: 1, text: p },
-                ],
-              }))
-              const lexical = {
-                root: {
-                  type: 'root',
-                  version: 1,
-                  format: '',
-                  indent: 0,
-                  direction: 'ltr',
-                  children,
-                },
-              }
-              ;(data as any).richContent = lexical
-            }
-          }
-
-          // Set title/description if missing (support localized objects)
-          const setLocalized = (target: any, key: string, val: string) => {
-            const cur = target[key]
-            if (cur && typeof cur === 'object') {
-              const locale = req.locale || req?.i18n?.language || 'ru'
-              if (!cur[locale] && val) cur[locale] = val
-            } else if (!cur && val) {
-              target[key] = val
-            }
-          }
-
-          const plain = String(rawText || '').replace(/\s+/g, ' ').trim()
-          const firstLine = String(rawText || '').split(/\n/).find((l) => l.trim())?.trim()
-          setLocalized(data as any, 'title', (firstLine || '').slice(0, 120))
-          setLocalized(data as any, 'description', (plain || '').slice(0, 160))
-
-          if (imported || (rawText && String(rawText).trim())) {
-            ;(data as any).importFile = undefined
-          }
-          return data
-        } catch (e) {
-          return data
-        }
-      },
-    ],
+    beforeValidate: [],
     afterChange: [
       async ({ doc, req, operation }) => {
         try {
@@ -231,6 +127,7 @@ export const Articles: CollectionConfig = {
               overrideAccess: true,
               locale: (req as any)?.locale || (req as any)?.i18n?.language || 'ru',
               depth: 0,
+              disableTransaction: true,
             })
           }
         } catch (e) {
