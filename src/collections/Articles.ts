@@ -60,16 +60,16 @@ export const Articles: CollectionConfig = {
           try {
             const preview = typeof importRef === 'object' ? { id: (importRef as any)?.id, filename: (importRef as any)?.filename } : importRef
             logger.info?.(`[articles/import] data.importFile raw=${JSON.stringify(preview)}`)
-          } catch {}
+          } catch { }
 
           const importId: string | undefined =
             typeof importRef === 'string'
               ? importRef
               : typeof importRef === 'number'
-              ? String(importRef)
-              : importRef?.id != null
-              ? String(importRef.id)
-              : undefined
+                ? String(importRef)
+                : importRef?.id != null
+                  ? String(importRef.id)
+                  : undefined
 
           if (!importId) {
             logger.info?.('[articles/import] no importFile set - skipping')
@@ -144,8 +144,8 @@ export const Articles: CollectionConfig = {
                     },
                   }
                 }
-              } catch {}
-              ;(data as any).richContent = lexical
+              } catch { }
+              ; (data as any).richContent = lexical
               logger.info?.('[articles/import] .docx: mammoth.extractRawText start')
               const plain = (await mammoth.extractRawText({ path: fullPath })).value || ''
               logger.info?.(`[articles/import] .docx: raw text length=${plain.length}`)
@@ -178,13 +178,13 @@ export const Articles: CollectionConfig = {
                 direction: 'ltr',
                 children: [{ type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' }],
               }))
-              ;(data as any).richContent = {
-                root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children },
-              }
+                ; (data as any).richContent = {
+                  root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children },
+                }
               try {
                 const childCount = ((data as any).richContent as any)?.root?.children?.length ?? 0
                 logger.info?.(`[articles/import] .doc: lexical root children=${childCount}`)
-              } catch {}
+              } catch { }
               const firstLine = String(text).split(/\n/).find((l) => l.trim())?.trim()
               logger.info?.(`[articles/import] .doc: firstLine=${firstLine?.slice(0, 80)}`)
               const hasTitle = Boolean((data as any)?.title ?? (originalDoc as any)?.title)
@@ -198,7 +198,7 @@ export const Articles: CollectionConfig = {
           }
 
           // clear importFile to avoid re-processing loops
-          ;(data as any).importFile = null
+          ; (data as any).importFile = null
           logger.info?.('[articles/import] beforeChange set importFile=null')
 
           // Ensure richContent is never empty on save
@@ -206,7 +206,7 @@ export const Articles: CollectionConfig = {
             const current = (data as any)?.richContent ?? (originalDoc as any)?.richContent
             const children = current?.root?.children
             if (!current?.root || !Array.isArray(children) || children.length === 0) {
-              ;(data as any).richContent = {
+              ; (data as any).richContent = {
                 root: {
                   type: 'root',
                   version: 1,
@@ -229,14 +229,14 @@ export const Articles: CollectionConfig = {
               }
               logger.info?.('[articles/import] beforeChange normalized empty richContent')
             }
-          } catch {}
+          } catch { }
 
           return data
         } catch (e) {
           const msg = e instanceof Error ? `${e.message}\n${e.stack}` : String(e)
           try {
-            ;((req as any)?.payload?.logger ?? console).error?.(`[articles/import] beforeChange error: ${msg}`)
-          } catch {}
+            ; ((req as any)?.payload?.logger ?? console).error?.(`[articles/import] beforeChange error: ${msg}`)
+          } catch { }
           return data
         }
       },
@@ -256,7 +256,7 @@ export const Articles: CollectionConfig = {
           const v: any = (doc as any)?.richContent
           const children = v?.root?.children
           if (!v?.root || !Array.isArray(children) || children.length === 0) {
-            ;(doc as any).richContent = {
+            ; (doc as any).richContent = {
               root: {
                 type: 'root',
                 version: 1,
@@ -279,7 +279,7 @@ export const Articles: CollectionConfig = {
             }
             logger.info?.(`[articles/import] afterRead sanitized empty richContent id=${(doc as any)?.id}`)
           }
-        } catch {}
+        } catch { }
         return doc
       },
     ],
