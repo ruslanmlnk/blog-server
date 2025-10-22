@@ -64,9 +64,9 @@ function normalizeHeadingsToParagraphsWithSize(tree: any): any {
       let next = node
       if (node.type === 'heading') {
         const tag = String((node as any).tag || '').toLowerCase()
-        const size = sizeMap[tag] || '24px'
-        next = { ...node, type: 'paragraph' }
-        delete (next as any).tag
+        const nextTag = tag === 'h1' ? 'h2' : tag
+        next = { ...node, tag: nextTag }
+        const size = sizeMap[nextTag] || sizeMap[tag] || '24px'
         setFontSizeStyleOnTextNodes(next, size)
       }
       if (Array.isArray((next as any).children)) {
@@ -96,6 +96,46 @@ function extractDataURIImages(html: string): { mime: string; data: string; ext: 
     results.push({ mime, data, ext })
   }
   return results
+}
+
+function buildLexicalFromHTMLHeadingsAndParagraphs(html: string): any {
+  try {
+    const dom = new JSDOM(`<!doctype html><html><body>${html}</body></html>`)
+    const doc = dom.window.document
+    const nodes: any[] = []
+    const linear = Array.from(doc.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p'))
+    const toText = (el: Element) => (el.textContent || '').replace(/\s+/g, ' ').trim()
+    const makeText = (text: string) => ({ type: 'text', version: 1, text, detail: 0, format: 0, mode: 'normal', style: '' })
+    for (const el of linear) {
+      const text = toText(el)
+      if (!text) continue
+      const tag = el.tagName.toLowerCase()
+      if (tag.startsWith('h')) {
+        const normalized = tag === 'h1' ? 'h2' : tag
+        nodes.push({
+          type: 'heading',
+          tag: normalized,
+          version: 1,
+          format: '',
+          indent: 0,
+          direction: 'ltr',
+          children: [makeText(text)],
+        })
+      } else {
+        nodes.push({
+          type: 'paragraph',
+          version: 1,
+          format: '',
+          indent: 0,
+          direction: 'ltr',
+          children: [makeText(text)],
+        })
+      }
+    }
+    return { root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children: nodes } }
+  } catch {
+    return { root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children: [] } }
+  }
 }
 
 export const Articles: CollectionConfig = {
@@ -213,39 +253,11 @@ export const Articles: CollectionConfig = {
                 const childCount = lexical?.root?.children?.length ?? 0
                 logger.info?.(`[articles/import] .docx: lexical root children=${childCount}`)
                 if (!lexical?.root || childCount === 0) {
-                  logger.warn?.('[articles/import] .docx: empty root detected - building paragraphs from plain text')
-                  const paras = String(plain)
-                    .replace(/\r\n/g, '\n')
-                    .split(/\n\s*\n/)
-                    .map((p) => p.trim())
-                    .filter(Boolean)
-                  const children = (paras.length ? paras : ['']).map((p, idx) => (
-                    idx === 0
-                      ? {
-                          type: 'paragraph',
-                          version: 1,
-                          format: '',
-                          indent: 0,
-                          direction: 'ltr',
-                          children: [
-                            { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: 'font-size: 32px' },
-                          ],
-                        }
-                      : {
-                          type: 'paragraph',
-                          version: 1,
-                          format: '',
-                          indent: 0,
-                          direction: 'ltr',
-                          children: [
-                            { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' },
-                          ],
-                        }
-                  ))
-                  lexical = {
-                    root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children },
-                  }
-                  logger.info?.(`[articles/import] .docx: built ${children.length} nodes; first as sized paragraph`)
+                  logger.warn?.('[articles/import] .docx: empty root detected - rebuilding from HTML (headings + paragraphs)')
+                  const built = buildLexicalFromHTMLHeadingsAndParagraphs(html)
+                  const builtCount = built?.root?.children?.length ?? 0
+                  logger.info?.(`[articles/import] .docx: rebuilt nodes count=${builtCount}`)
+                  lexical = builtCount > 0 ? built : { root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children: [] } }
                 }
               } catch { }
               ; (data as any).richContent = lexical
@@ -324,13 +336,14 @@ export const Articles: CollectionConfig = {
               const children = (paras.length ? paras : ['']).map((p, idx) => (
                 idx === 0
                   ? {
-                      type: 'paragraph',
+                      type: 'heading',
+                      tag: 'h2',
                       version: 1,
                       format: '',
                       indent: 0,
                       direction: 'ltr',
                       children: [
-                        { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: 'font-size: 32px' },
+                        { type: 'text', version: 1, text: p, detail: 0, format: 0, mode: 'normal', style: '' },
                       ],
                     }
                   : {
