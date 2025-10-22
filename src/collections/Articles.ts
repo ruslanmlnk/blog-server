@@ -14,6 +14,7 @@ import WordExtractor from 'word-extractor'
 import { EXPERIMENTAL_TableFeature } from '@payloadcms/richtext-lexical'
 import { TextSizeFeature } from 'payload-lexical-typography'
 import { seoFields } from '@/fields/seoFields'
+import { JSDOM } from 'jsdom'
 
 function transliterate(text: string): string {
   const map: Record<string, string> = {
@@ -79,6 +80,22 @@ function normalizeHeadingsToParagraphsWithSize(tree: any): any {
     }
   } catch {}
   return tree
+}
+
+function extractDataURIImages(html: string): { mime: string; data: string; ext: string }[] {
+  const results: { mime: string; data: string; ext: string }[] = []
+  const imgRe = /<img[^>]+src=["'](data:[^"']+)["'][^>]*>/gi
+  let m: RegExpExecArray | null
+  while ((m = imgRe.exec(html))) {
+    const src = m[1]
+    const match = /^data:([^;]+);base64,(.*)$/i.exec(src)
+    if (!match) continue
+    const mime = match[1]
+    const data = match[2]
+    const ext = mime.includes('png') ? 'png' : mime.includes('jpeg') || mime.includes('jpg') ? 'jpg' : mime.includes('webp') ? 'webp' : mime.includes('gif') ? 'gif' : 'bin'
+    results.push({ mime, data, ext })
+  }
+  return results
 }
 
 export const Articles: CollectionConfig = {
@@ -232,6 +249,57 @@ export const Articles: CollectionConfig = {
                 }
               } catch { }
               ; (data as any).richContent = lexical
+
+              // Extract and upload inline images from DOCX HTML, then append as upload nodes
+              try {
+                const images = extractDataURIImages(html)
+                logger.info?.(`[articles/import] .docx: found ${images.length} inline images`)
+                if (images.length) {
+                  const uploadNodes: any[] = []
+                  let idx = 0
+                  for (const img of images) {
+                    try {
+                      const buffer = Buffer.from(img.data, 'base64')
+                      const filename = `article-${(originalDoc as any)?.id || 'new'}-${Date.now()}-${idx}.${img.ext}`
+                      const media = await req.payload.create({
+                        collection: 'media',
+                        file: { data: buffer, filename, mimetype: img.mime },
+                        data: { alt: (data as any)?.title || (originalDoc as any)?.title || filename },
+                        overrideAccess: true,
+                      })
+                      uploadNodes.push({
+                        type: 'upload',
+                        version: 1,
+                        relationTo: 'media',
+                        value: { id: (media as any)?.id, url: (media as any)?.url, alt: (media as any)?.alt },
+                      })
+                      idx++
+                    } catch (e) {
+                      logger.warn?.(`[articles/import] .docx: image upload failed: ${e instanceof Error ? e.message : String(e)}`)
+                    }
+                  }
+                  if (uploadNodes.length) {
+                    const rootChildren = ((data as any).richContent as any)?.root?.children
+                    if (Array.isArray(rootChildren)) {
+                      rootChildren.push(...uploadNodes)
+                    } else {
+                      ;(data as any).richContent = {
+                        root: {
+                          type: 'root',
+                          version: 1,
+                          format: '',
+                          indent: 0,
+                          direction: 'ltr',
+                          children: uploadNodes,
+                        },
+                      }
+                    }
+                    logger.info?.(`[articles/import] .docx: appended ${uploadNodes.length} image nodes`)
+                  }
+                }
+              } catch (ie) {
+                logger.warn?.(`[articles/import] .docx: image extraction error: ${ie instanceof Error ? ie.message : String(ie)}`)
+              }
               const firstLine = String(plain).split(/\n/).find((l) => l.trim())?.trim()
               logger.info?.(`[articles/import] .docx: firstLine=${firstLine?.slice(0, 80)}`)
               const hasTitle = Boolean((data as any)?.title ?? (originalDoc as any)?.title)
