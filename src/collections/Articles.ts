@@ -263,7 +263,7 @@ export const Articles: CollectionConfig = {
                       const filename = `article-${(originalDoc as any)?.id || 'new'}-${Date.now()}-${idx}.${img.ext}`
                       const media = await req.payload.create({
                         collection: 'media',
-                        file: { data: buffer, filename, mimetype: img.mime },
+                        file: { data: buffer, name: filename, size: buffer.length, mimetype: img.mime },
                         data: { alt: (data as any)?.title || (originalDoc as any)?.title || filename },
                         overrideAccess: true,
                       })
