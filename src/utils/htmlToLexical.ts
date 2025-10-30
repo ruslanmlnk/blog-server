@@ -196,7 +196,15 @@ function parseInline(el: Element, inheritedFmt = 0, inheritedFontSize?: string):
         const kids = parseInline(e, fmt, fontSize)
         const fallback = (e.textContent || '').trim()
         const linkChildren = kids.length ? kids : (fallback ? [makeText(fallback, fmt, fontSize ? `font-size: ${fontSize};` : undefined)] : [])
-        // повертаємо link-ноду у форматі Payload (fields.url)
+
+        // Only create link node for safe, absolute URLs or allowed schemes
+        const ok = /^https?:\/\//i.test(href) || /^mailto:/i.test(href) || /^tel:/i.test(href)
+        if (!ok) {
+          // Degrade to plain inline content to avoid invalid link validation errors
+          if (linkChildren.length) result.push(...linkChildren)
+          return
+        }
+
         result.push({
           type: 'link',
           version: 1,
