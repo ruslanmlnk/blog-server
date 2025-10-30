@@ -13,6 +13,7 @@ import { htmlToLexicalState } from '@/utils/htmlToLexical'
 import WordExtractor from 'word-extractor'
 import { EXPERIMENTAL_TableFeature } from '@payloadcms/richtext-lexical'
 import { TextSizeFeature } from 'payload-lexical-typography'
+import { LinkFeature } from '@payloadcms/richtext-lexical'
 import { seoFields } from '@/fields/seoFields'
 import { JSDOM } from 'jsdom'
 
@@ -98,8 +99,10 @@ function extractDataURIImages(html: string): { mime: string; data: string; ext: 
   return results
 }
 
+
 function buildLexicalFromHTMLHeadingsAndParagraphs(html: string): any {
   try {
+console.log(html)
     const dom = new JSDOM(`<!doctype html><html><body>${html}</body></html>`)
     const doc = dom.window.document
     const nodes: any[] = []
@@ -137,6 +140,7 @@ function buildLexicalFromHTMLHeadingsAndParagraphs(html: string): any {
     return { root: { type: 'root', version: 1, format: '', indent: 0, direction: 'ltr', children: [] } }
   }
 }
+   
 
 export const Articles: CollectionConfig = {
   slug: 'articles',
@@ -521,6 +525,7 @@ export const Articles: CollectionConfig = {
       editor: lexicalEditor({
         features: ({ defaultFeatures }) => [
           ...defaultFeatures,
+		LinkFeature(),
           EXPERIMENTAL_TableFeature(),
           TextSizeFeature({
             sizes: [
