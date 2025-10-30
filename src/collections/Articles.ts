@@ -99,6 +99,137 @@ function extractDataURIImages(html: string): { mime: string; data: string; ext: 
   return results
 }
 
+// Replace <img> elements with ordered markers [[IMG_i]] and return images data
+function injectImageMarkers(html: string): { htmlWithMarkers: string; images: { mime: string; data: string; ext: string }[] } {
+  try {
+    const dom = new JSDOM(`<!doctype html><html><body>${html}</body></html>`)
+    const { document } = dom.window
+    const images: { mime: string; data: string; ext: string }[] = []
+    const nodes = Array.from(document.querySelectorAll('img'))
+    nodes.forEach((img, idx) => {
+      const src = img.getAttribute('src') || ''
+      const m = /^data:([^;]+);base64,(.*)$/i.exec(src)
+      if (!m) {
+        // skip non-data images for now
+        img.remove()
+        return
+      }
+      const mime = m[1]
+      const data = m[2]
+      const ext = mime.includes('png') ? 'png' : mime.includes('jpeg') || mime.includes('jpg') ? 'jpg' : mime.includes('webp') ? 'webp' : mime.includes('gif') ? 'gif' : 'bin'
+      images.push({ mime, data, ext })
+      const marker = document.createTextNode(`[[IMG_${idx}]]`)
+      img.replaceWith(marker)
+    })
+    const htmlWithMarkers = document.body.innerHTML
+    return { htmlWithMarkers, images }
+  } catch {
+    return { htmlWithMarkers: html, images: [] }
+  }
+}
+
+// Place uploaded image nodes at marker positions and remove markers from paragraphs
+function placeUploadsAtMarkers(tree: any, uploadNodes: any[]): any {
+  try {
+    const markerOnly = /^\s*\[\[IMG_(\d+)\]\]\s*$/
+    const markerInText = /\[\[IMG_(\d+)\]\]/g
+    const result: any[] = []
+    const children: any[] = (tree?.root?.children && Array.isArray(tree.root.children)) ? tree.root.children : []
+
+    function cloneParagraphLike(node: any, kids: any[]) {
+      const base = { ...node, children: kids }
+      return base
+    }
+
+    for (const node of children) {
+      if (node?.type !== 'paragraph') {
+        result.push(node)
+        continue
+      }
+
+      const kids: any[] = Array.isArray(node.children) ? node.children : []
+      // detect simple case: paragraph contains only markers (possibly multiple)
+      const texts = kids.filter((k) => k?.type === 'text') as any[]
+      const nonText = kids.filter((k) => k?.type !== 'text')
+
+      if (nonText.length === 0 && texts.length > 0 && texts.every((t) => typeof t.text === 'string' && markerOnly.test(t.text))) {
+        // For each marker-only text, insert corresponding upload node
+        for (const t of texts) {
+          const m = markerOnly.exec(String(t.text))
+          markerOnly.lastIndex = 0
+          const idx = m ? parseInt(m[1], 10) : -1
+          const up = uploadNodes[idx]
+          if (up) result.push(up)
+        }
+        continue
+      }
+
+      // Mixed content: try to split around marker-only text children
+      let buffer: any[] = []
+      let splitOccurred = false
+      for (const child of kids) {
+        if (child?.type === 'text' && typeof child.text === 'string') {
+          const text = child.text
+          // if entire text is a marker => flush paragraph, insert upload
+          const whole = markerOnly.exec(text)
+          markerOnly.lastIndex = 0
+          if (whole) {
+            if (buffer.length) {
+              result.push(cloneParagraphLike(node, buffer))
+              buffer = []
+            }
+            const idx = parseInt(whole[1], 10)
+            const up = uploadNodes[idx]
+            if (up) result.push(up)
+            splitOccurred = true
+            continue
+          }
+          // otherwise, strip inline markers from text
+          let lastIndex = 0
+          let m: RegExpExecArray | null
+          let madeChange = false
+          const parts: any[] = []
+          while ((m = markerInText.exec(text))) {
+            const before = text.slice(lastIndex, m.index)
+            if (before) parts.push({ ...child, text: before })
+            const idx = parseInt(m[1], 10)
+            if (buffer.length || parts.length) {
+              result.push(cloneParagraphLike(node, buffer.concat(parts)))
+            }
+            buffer = []
+            parts.length = 0
+            const up = uploadNodes[idx]
+            if (up) result.push(up)
+            lastIndex = markerInText.lastIndex
+            madeChange = true
+            splitOccurred = true
+          }
+          markerInText.lastIndex = 0
+          const after = text.slice(lastIndex)
+          if (madeChange) {
+            if (after) buffer.push({ ...child, text: after })
+          } else {
+            buffer.push(child)
+          }
+        } else {
+          buffer.push(child)
+        }
+      }
+
+      if (buffer.length) result.push(cloneParagraphLike(node, buffer))
+      if (!splitOccurred && buffer.length === kids.length) {
+        // No markers encountered; keep original node
+        // But we've already pushed a clone above; replace last with original to avoid needless diffs
+        result[result.length - 1] = node
+      }
+    }
+
+    return { ...tree, root: { ...tree.root, children: result } }
+  } catch {
+    return tree
+  }
+}
+
 
 function buildLexicalFromHTMLHeadingsAndParagraphs(html: string): any {
   try {
@@ -248,8 +379,10 @@ export const Articles: CollectionConfig = {
             logger.info?.(`[articles/import] .docx: html length=${html?.length ?? 0}`)
             logger.info?.(`[articles/import] .docx: raw text length=${plain.length}`)
             if (html && html.trim()) {
+              const { htmlWithMarkers, images } = injectImageMarkers(html)
+              logger.info?.(`[articles/import] .docx: found ${images.length} inline images`)
               logger.info?.('[articles/import] .docx: htmlToLexicalState start')
-              let lexical: any = await htmlToLexicalState(html)
+              let lexical: any = await htmlToLexicalState(htmlWithMarkers)
               // Normalize headings: no <h1> in body; convert all headings to paragraphs with font-size
               lexical = normalizeHeadingsToParagraphsWithSize(lexical)
               logger.info?.('[articles/import] .docx: htmlToLexicalState done')
@@ -266,10 +399,8 @@ export const Articles: CollectionConfig = {
               } catch { }
               ; (data as any).richContent = lexical
 
-              // Extract and upload inline images from DOCX HTML, then append as upload nodes
+              // Upload inline images and place them at markers
               try {
-                const images = extractDataURIImages(html)
-                logger.info?.(`[articles/import] .docx: found ${images.length} inline images`)
                 if (images.length) {
                   const uploadNodes: any[] = []
                   let idx = 0
@@ -295,26 +426,12 @@ export const Articles: CollectionConfig = {
                     }
                   }
                   if (uploadNodes.length) {
-                    const rootChildren = ((data as any).richContent as any)?.root?.children
-                    if (Array.isArray(rootChildren)) {
-                      rootChildren.push(...uploadNodes)
-                    } else {
-                      ;(data as any).richContent = {
-                        root: {
-                          type: 'root',
-                          version: 1,
-                          format: '',
-                          indent: 0,
-                          direction: 'ltr',
-                          children: uploadNodes,
-                        },
-                      }
-                    }
-                    logger.info?.(`[articles/import] .docx: appended ${uploadNodes.length} image nodes`)
+                    ;(data as any).richContent = placeUploadsAtMarkers((data as any).richContent, uploadNodes)
+                    logger.info?.(`[articles/import] .docx: placed ${uploadNodes.length} image nodes inline`)
                   }
                 }
               } catch (ie) {
-                logger.warn?.(`[articles/import] .docx: image extraction error: ${ie instanceof Error ? ie.message : String(ie)}`)
+                logger.warn?.(`[articles/import] .docx: image processing error: ${ie instanceof Error ? ie.message : String(ie)}`)
               }
               const firstLine = String(plain).split(/\n/).find((l) => l.trim())?.trim()
               logger.info?.(`[articles/import] .docx: firstLine=${firstLine?.slice(0, 80)}`)
