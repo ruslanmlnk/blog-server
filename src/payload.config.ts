@@ -23,6 +23,7 @@ import WeeklyNewsletter from './collections/WeeklyNewsletter'
 
 import { PressHub } from './collections/PressHub'
 import { InterviewHub } from './collections/InterviewHub'
+import { SiteGlobals } from './collections/SiteGlobals'
 
 
 const filename = fileURLToPath(import.meta.url)
@@ -65,9 +66,8 @@ csrf: [
   },
   collections: [Users, PrivacyPolicy, Media, Articles, ArticleCategories, Home, About, Contact, Press, Interview, ContactMessages, WeeklyNewsletter],
   globals: [
-  InterviewHub,
-  PressHub,
-],
+    SiteGlobals,
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
