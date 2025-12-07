@@ -68,6 +68,7 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
+    'privacy-policy': PrivacyPolicy;
     media: Media;
     articles: Article;
     article_categories: ArticleCategory;
@@ -85,6 +86,7 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
+    'privacy-policy': PrivacyPolicySelect<false> | PrivacyPolicySelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     article_categories: ArticleCategoriesSelect<false> | ArticleCategoriesSelect<true>;
@@ -102,8 +104,12 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    siteGlobals: SiteGlobal;
+  };
+  globalsSelect: {
+    siteGlobals: SiteGlobalsSelect<false> | SiteGlobalsSelect<true>;
+  };
   locale: 'ru' | 'uk' | 'en' | 'fr';
   user: User & {
     collection: 'users';
@@ -157,6 +163,33 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "privacy-policy".
+ */
+export interface PrivacyPolicy {
+  id: number;
+  title: string;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  richContent?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
@@ -180,7 +213,15 @@ export interface Media {
  */
 export interface Article {
   id: number;
+  meta?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+  };
   title: string;
+  /**
+   * Upload .doc or .docx to auto-fill Title, Description and Rich Content
+   */
+  importFile?: (number | null) | Media;
   /**
    * Slug is generated from title, but can be overridden
    */
@@ -212,6 +253,14 @@ export interface Article {
  */
 export interface ArticleCategory {
   id: number;
+  /**
+   * Порядковий номер: 1 — перший, 2 — другий і т.д.
+   */
+  sortOrder?: number | null;
+  meta?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+  };
   title: string;
   icon?: (number | null) | Media;
   content?:
@@ -258,6 +307,10 @@ export interface ArticleCategory {
  */
 export interface Home {
   id: number;
+  meta?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+  };
   title: string;
   description: string;
   trends?: {
@@ -301,6 +354,10 @@ export interface Home {
  */
 export interface About {
   id: number;
+  meta?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+  };
   title: string;
   heroImage?: (number | null) | Media;
   lead: string;
@@ -320,6 +377,10 @@ export interface About {
  */
 export interface Contact {
   id: number;
+  meta?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+  };
   title: string;
   description: string;
   sideImage?: (number | null) | Media;
@@ -332,13 +393,20 @@ export interface Contact {
  */
 export interface Press {
   id: number;
+  meta?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+  };
+  /**
+   * Порядковий номер: 1 — перший, 2 — другий і т.д.
+   */
+  sortOrder?: number | null;
   title: string;
   description?: string | null;
   icon?: (number | null) | Media;
   content?:
     | (
         | {
-            date?: string | null;
             visibleFrom?: string | null;
             href: string;
             title: string;
@@ -350,7 +418,6 @@ export interface Press {
           }
         | {
             items: {
-              date?: string | null;
               visibleFrom?: string | null;
               href: string;
               title: string;
@@ -386,6 +453,14 @@ export interface Press {
  */
 export interface Interview {
   id: number;
+  meta?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+  };
+  /**
+   * Порядковий номер: 1 — перший, 2 — другий і т.д.
+   */
+  sortOrder?: number | null;
   title: string;
   content?:
     | (
@@ -462,6 +537,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'privacy-policy';
+        value: number | PrivacyPolicy;
       } | null)
     | ({
         relationTo: 'media';
@@ -569,6 +648,18 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "privacy-policy_select".
+ */
+export interface PrivacyPolicySelect<T extends boolean = true> {
+  title?: T;
+  metaTitle?: T;
+  metaDescription?: T;
+  richContent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
@@ -590,7 +681,14 @@ export interface MediaSelect<T extends boolean = true> {
  * via the `definition` "articles_select".
  */
 export interface ArticlesSelect<T extends boolean = true> {
+  meta?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+      };
   title?: T;
+  importFile?: T;
   slug?: T;
   bg?: T;
   category?: T;
@@ -604,6 +702,13 @@ export interface ArticlesSelect<T extends boolean = true> {
  * via the `definition` "article_categories_select".
  */
 export interface ArticleCategoriesSelect<T extends boolean = true> {
+  sortOrder?: T;
+  meta?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+      };
   title?: T;
   icon?: T;
   content?:
@@ -652,6 +757,12 @@ export interface ArticleCategoriesSelect<T extends boolean = true> {
  * via the `definition` "home_select".
  */
 export interface HomeSelect<T extends boolean = true> {
+  meta?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+      };
   title?: T;
   description?: T;
   trends?:
@@ -698,6 +809,12 @@ export interface HomeSelect<T extends boolean = true> {
  * via the `definition` "about_select".
  */
 export interface AboutSelect<T extends boolean = true> {
+  meta?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+      };
   title?: T;
   heroImage?: T;
   lead?: T;
@@ -716,6 +833,12 @@ export interface AboutSelect<T extends boolean = true> {
  * via the `definition` "contact_select".
  */
 export interface ContactSelect<T extends boolean = true> {
+  meta?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+      };
   title?: T;
   description?: T;
   sideImage?: T;
@@ -727,6 +850,13 @@ export interface ContactSelect<T extends boolean = true> {
  * via the `definition` "press_select".
  */
 export interface PressSelect<T extends boolean = true> {
+  meta?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+      };
+  sortOrder?: T;
   title?: T;
   description?: T;
   icon?: T;
@@ -736,7 +866,6 @@ export interface PressSelect<T extends boolean = true> {
         pressOverlayHero?:
           | T
           | {
-              date?: T;
               visibleFrom?: T;
               href?: T;
               title?: T;
@@ -751,7 +880,6 @@ export interface PressSelect<T extends boolean = true> {
               items?:
                 | T
                 | {
-                    date?: T;
                     visibleFrom?: T;
                     href?: T;
                     title?: T;
@@ -787,6 +915,13 @@ export interface PressSelect<T extends boolean = true> {
  * via the `definition` "interview_select".
  */
 export interface InterviewSelect<T extends boolean = true> {
+  meta?:
+    | T
+    | {
+        metaTitle?: T;
+        metaDescription?: T;
+      };
+  sortOrder?: T;
   title?: T;
   content?:
     | T
@@ -889,6 +1024,84 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "siteGlobals".
+ */
+export interface SiteGlobal {
+  id: number;
+  menu?: {
+    about?: string | null;
+    blog?: string | null;
+    press?: string | null;
+    interview?: string | null;
+    contacts?: string | null;
+  };
+  categories?: {
+    backToHome?: string | null;
+  };
+  press?: {
+    meta?: {
+      metaTitle?: string | null;
+      metaDescription?: string | null;
+    };
+    allTitle?: string | null;
+  };
+  interview?: {
+    meta?: {
+      metaTitle?: string | null;
+      metaDescription?: string | null;
+    };
+    allTitle?: string | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "siteGlobals_select".
+ */
+export interface SiteGlobalsSelect<T extends boolean = true> {
+  menu?:
+    | T
+    | {
+        about?: T;
+        blog?: T;
+        press?: T;
+        interview?: T;
+        contacts?: T;
+      };
+  categories?:
+    | T
+    | {
+        backToHome?: T;
+      };
+  press?:
+    | T
+    | {
+        meta?:
+          | T
+          | {
+              metaTitle?: T;
+              metaDescription?: T;
+            };
+        allTitle?: T;
+      };
+  interview?:
+    | T
+    | {
+        meta?:
+          | T
+          | {
+              metaTitle?: T;
+              metaDescription?: T;
+            };
+        allTitle?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

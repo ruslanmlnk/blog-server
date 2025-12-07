@@ -4,6 +4,7 @@ import type { CollectionConfig } from 'payload'
 import { CategoryOverlayPair } from '@/blocks/category/OverlayPair'
 import { CategoryCardGrid } from '@/blocks/category/CardGrid'
 import { CategoryOverlayHero } from '@/blocks/category/OverlayHero'
+import { seoFields } from '@/fields/seoFields'
 
 export const ArticleCategories: CollectionConfig = {
   slug: 'article_categories',
@@ -18,6 +19,19 @@ export const ArticleCategories: CollectionConfig = {
     useAsTitle: 'title',
   },
   fields: [
+    {
+  name: 'sortOrder',
+  label: 'Sort order',
+  type: 'number',
+  defaultValue: 1,
+  index: true,
+  admin: {
+    position: 'sidebar',
+    description: 'Порядковий номер: 1 — перший, 2 — другий і т.д.',
+  },
+},
+
+    seoFields,
     {
       name: 'title',
       type: 'text',

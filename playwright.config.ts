@@ -36,6 +36,6 @@ export default defineConfig({
   webServer: {
     command: 'pnpm dev',
     reuseExistingServer: true,
-    url: 'http://localhost:3001',
+    url: 'http://91.219.63.21:3001',
   },
 })

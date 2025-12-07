@@ -4,6 +4,7 @@ import type { CollectionConfig } from 'payload'
 import { CategoryCardGrid } from '@/blocks/category/CardGrid'
 import { HomeFeatured } from '@/blocks/home/Featured'
 import { HomeTrends } from '@/blocks/home/Trends'
+import { seoFields } from '@/fields/seoFields'
 
 export const Home: CollectionConfig = {
   slug: 'home',
@@ -21,6 +22,7 @@ export const Home: CollectionConfig = {
     useAsTitle: 'title',
   },
   fields: [
+    seoFields,
     {
       name: 'title',
       type: 'text',
