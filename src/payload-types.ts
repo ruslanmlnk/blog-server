@@ -105,12 +105,10 @@ export interface Config {
     defaultIDType: number;
   };
   globals: {
-    interviewHub: InterviewHub;
-    pressHub: PressHub;
+    siteGlobals: SiteGlobal;
   };
   globalsSelect: {
-    interviewHub: InterviewHubSelect<false> | InterviewHubSelect<true>;
-    pressHub: PressHubSelect<false> | PressHubSelect<true>;
+    siteGlobals: SiteGlobalsSelect<false> | SiteGlobalsSelect<true>;
   };
   locale: 'ru' | 'uk' | 'en' | 'fr';
   user: User & {
@@ -1029,247 +1027,77 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "interviewHub".
+ * via the `definition` "siteGlobals".
  */
-export interface InterviewHub {
+export interface SiteGlobal {
   id: number;
-  meta?: {
-    metaTitle?: string | null;
-    metaDescription?: string | null;
+  menu?: {
+    about?: string | null;
+    blog?: string | null;
+    press?: string | null;
+    interview?: string | null;
+    contacts?: string | null;
   };
-  title: string;
-  description?: string | null;
-  content?:
-    | (
-        | {
-            linkedInterview?: (number | null) | Interview;
-            visibleFrom?: string | null;
-            href: string;
-            title: string;
-            subtitle?: string | null;
-            image: number | Media;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'interviewOverlayHeroHub';
-          }
-        | {
-            items: {
-              linkedInterview?: (number | null) | Interview;
-              visibleFrom?: string | null;
-              href: string;
-              title: string;
-              description?: string | null;
-              image: number | Media;
-              id?: string | null;
-            }[];
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'interviewCardGridHub';
-          }
-        | {
-            items: {
-              linkedInterview?: (number | null) | Interview;
-              visibleFrom?: string | null;
-              href: string;
-              title: string;
-              image: number | Media;
-              id?: string | null;
-            }[];
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'interviewOverlayPairHub';
-          }
-      )[]
-    | null;
+  categories?: {
+    backToHome?: string | null;
+  };
+  press?: {
+    meta?: {
+      metaTitle?: string | null;
+      metaDescription?: string | null;
+    };
+    allTitle?: string | null;
+  };
+  interview?: {
+    meta?: {
+      metaTitle?: string | null;
+      metaDescription?: string | null;
+    };
+    allTitle?: string | null;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "pressHub".
+ * via the `definition` "siteGlobals_select".
  */
-export interface PressHub {
-  id: number;
-  meta?: {
-    metaTitle?: string | null;
-    metaDescription?: string | null;
-  };
-  title: string;
-  description?: string | null;
-  content?:
-    | (
-        | {
-            linkedPress?: (number | null) | Press;
-            visibleFrom?: string | null;
-            href: string;
-            title: string;
-            subtitle?: string | null;
-            image: number | Media;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'pressOverlayHeroHub';
-          }
-        | {
-            items: {
-              linkedPress?: (number | null) | Press;
-              visibleFrom?: string | null;
-              href: string;
-              title: string;
-              description?: string | null;
-              image: number | Media;
-              id?: string | null;
-            }[];
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'pressCardGridHub';
-          }
-        | {
-            items: {
-              linkedPress?: (number | null) | Press;
-              date?: string | null;
-              visibleFrom?: string | null;
-              href: string;
-              title: string;
-              image: number | Media;
-              id?: string | null;
-            }[];
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'pressOverlayPairHub';
-          }
-      )[]
-    | null;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "interviewHub_select".
- */
-export interface InterviewHubSelect<T extends boolean = true> {
-  meta?:
+export interface SiteGlobalsSelect<T extends boolean = true> {
+  menu?:
     | T
     | {
-        metaTitle?: T;
-        metaDescription?: T;
+        about?: T;
+        blog?: T;
+        press?: T;
+        interview?: T;
+        contacts?: T;
       };
-  title?: T;
-  description?: T;
-  content?:
+  categories?:
     | T
     | {
-        interviewOverlayHeroHub?:
-          | T
-          | {
-              linkedInterview?: T;
-              visibleFrom?: T;
-              href?: T;
-              title?: T;
-              subtitle?: T;
-              image?: T;
-              id?: T;
-              blockName?: T;
-            };
-        interviewCardGridHub?:
-          | T
-          | {
-              items?:
-                | T
-                | {
-                    linkedInterview?: T;
-                    visibleFrom?: T;
-                    href?: T;
-                    title?: T;
-                    description?: T;
-                    image?: T;
-                    id?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
-        interviewOverlayPairHub?:
-          | T
-          | {
-              items?:
-                | T
-                | {
-                    linkedInterview?: T;
-                    visibleFrom?: T;
-                    href?: T;
-                    title?: T;
-                    image?: T;
-                    id?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
+        backToHome?: T;
       };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "pressHub_select".
- */
-export interface PressHubSelect<T extends boolean = true> {
-  meta?:
+  press?:
     | T
     | {
-        metaTitle?: T;
-        metaDescription?: T;
+        meta?:
+          | T
+          | {
+              metaTitle?: T;
+              metaDescription?: T;
+            };
+        allTitle?: T;
       };
-  title?: T;
-  description?: T;
-  content?:
+  interview?:
     | T
     | {
-        pressOverlayHeroHub?:
+        meta?:
           | T
           | {
-              linkedPress?: T;
-              visibleFrom?: T;
-              href?: T;
-              title?: T;
-              subtitle?: T;
-              image?: T;
-              id?: T;
-              blockName?: T;
+              metaTitle?: T;
+              metaDescription?: T;
             };
-        pressCardGridHub?:
-          | T
-          | {
-              items?:
-                | T
-                | {
-                    linkedPress?: T;
-                    visibleFrom?: T;
-                    href?: T;
-                    title?: T;
-                    description?: T;
-                    image?: T;
-                    id?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
-        pressOverlayPairHub?:
-          | T
-          | {
-              items?:
-                | T
-                | {
-                    linkedPress?: T;
-                    date?: T;
-                    visibleFrom?: T;
-                    href?: T;
-                    title?: T;
-                    image?: T;
-                    id?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
+        allTitle?: T;
       };
   updatedAt?: T;
   createdAt?: T;
