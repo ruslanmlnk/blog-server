@@ -5,8 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
-    "dev": "cross-env PORT=3001 next dev",
+    "build": "cross-env NODE_OPTIONS=\"--no-deprecation\" next build --webpack",
+    "dev": "cross-env PORT=3001 next dev --webpack",
     "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation next dev",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
@@ -18,41 +18,51 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
   },
   "dependencies": {
-    "@payloadcms/db-postgres": "3.56.0",
-    "@payloadcms/next": "3.56.0",
-    "@payloadcms/payload-cloud": "3.56.0",
-    "@payloadcms/richtext-lexical": "3.56.0",
-    "@payloadcms/ui": "3.56.0",
-    "cross-env": "^7.0.3",
-    "dotenv": "16.4.7",
-    "graphql": "^16.8.1",
-    "next": "^15.6.0-canary.20",
-    "payload": "3.56.0",
-    "payload-lexical-typography": "^0.5.1",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "sharp": "0.34.2"
+    "@faceless-ui/modal": "3.0.0",
+    "@faceless-ui/scroll-info": "2.0.0",
+    "@payloadcms/db-postgres": "3.67.0",
+    "@payloadcms/next": "^3.67.0",
+    "@payloadcms/payload-cloud": "3.67.0",
+    "@payloadcms/richtext-lexical": "^3.67.0",
+    "@payloadcms/ui": "3.67.0",
+    "cross-env": "^10.1.0",
+    "dotenv": "17.2.3",
+    "graphql": "^16.12.0",
+    "jsdom": "27.3.0",
+    "mammoth": "^1.11.0",
+    "monaco-editor": "^0.55.1",
+    "next": "^16.0.8",
+    "payload": "^3.67.0",
+    "payload-lexical-typography": "^0.5.2",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "sharp": "0.34.5",
+    "word-extractor": "^1.0.4",
+    "yjs": "^13.6.27"
   },
   "devDependencies": {
-    "@playwright/test": "1.54.1",
+    "@playwright/test": "^1.57.0",
     "@testing-library/react": "16.3.0",
-    "@types/node": "^22.5.4",
-    "@types/react": "19.1.8",
-    "@types/react-dom": "19.1.6",
-    "@vitejs/plugin-react": "4.5.2",
-    "eslint": "^9.16.0",
-    "eslint-config-next": "15.4.4",
-    "jsdom": "26.1.0",
-    "playwright": "1.54.1",
-    "playwright-core": "1.54.1",
-    "prettier": "^3.4.2",
-    "typescript": "5.7.3",
+    "@types/jsdom": "^27.0.0",
+    "@types/node": "^24.10.2",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.1.2",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "16.0.8",
+    "playwright": "1.57.0",
+    "playwright-core": "1.57.0",
+    "prettier": "^3.7.4",
+    "typescript": "5.9.3",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "3.2.3"
+    "vitest": "4.0.15"
+  },
+  "overrides": {
+    "lexical": "0.35.0",
+    "@lexical/*": "0.35.0"
   },
   "engines": {
-    "node": "^18.20.2 || >=20.9.0",
-    "pnpm": "^9 || ^10"
+    "node": ">=22.12.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -61,4 +71,4 @@
       "unrs-resolver"
     ]
   }
-}
+ }
