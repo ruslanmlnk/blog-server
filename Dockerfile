@@ -1,26 +1,10 @@
-# -------- deps --------
-FROM node:22.12.0-alpine AS deps
-WORKDIR /app
+FROM node:22.12.0-alpine
 
-# yarn classic
+WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 
-# -------- build --------
-FROM node:22.12.0-alpine AS build
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-ENV NODE_ENV=production
 RUN yarn build
 
-# -------- runtime --------
-FROM node:22.12.0-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-
-COPY --from=build /app ./
-
-EXPOSE 3001
-CMD ["yarn", "start"]
+CMD ["yarn","start"]
